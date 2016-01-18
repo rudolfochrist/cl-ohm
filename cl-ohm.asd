@@ -5,7 +5,6 @@
   :author "Your Name <your.name@example.com>"
   :license "Specify license here"
   :depends-on (#:cl-redis
-               #:uuid
                #:closer-mop)
   :serial t
   :components ((:file "package")
