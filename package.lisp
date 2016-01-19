@@ -4,4 +4,6 @@
   (:nicknames #:ohm)
   (:use #:cl)
   (:import-from #:alexandria
-                #:define-constant))
+                #:define-constant
+                #:make-keyword
+                #:when-let*))

@@ -50,6 +50,13 @@
              (format stream "The object ~A is missing an ID and is therefore unmanaged. Please create~
 managed objects with the function CREATE." (unmanaged-object condition)))))
 
+(define-condition ohm-unmanged-class-error (ohm-error)
+  ((class :initarg :class
+          :accessor class))
+  (:report (lambda (condition stream)
+             (format stream "The class ~A is not a persistence class. Please use a class defined by DEFOHM."
+                     (class condition)))))
+
 (define-constant +global-id-counter+ "CL-OHM-GLOBAL-ID-COUNTER" :test #'string=)
 
 (defclass ohm-model ()
@@ -65,6 +72,10 @@ managed objects with the function CREATE." (unmanaged-object condition)))))
   (:method ((model ohm-model))
     (slot-boundp model 'id)))
 
+(defun make-key (&rest segments)
+  (with-output-to-string (out)
+    (format out "~{~A~^:~}" segments)))
+
 (defgeneric object-key (model &rest segments)
   (:documentation "Generates an Ohm model object key.")
   (:method :before ((model ohm-model) &rest segments)
@@ -72,10 +83,7 @@ managed objects with the function CREATE." (unmanaged-object condition)))))
            (unless (managed-object-p model)
              (error 'ohm-missig-id-error :object model)))
   (:method ((model ohm-model) &rest segments)
-    (with-output-to-string (out)
-      (format out "~A:~A" (class-name (class-of model)) (id model))
-      (when (consp segments)
-        (format out "~{:~A~}" segments)))))
+    (apply #'make-key (class-name (class-of model)) (id model) segments)))
 
 (defgeneric class-key (model &rest segments)
   (:documentation "Generates a Ohm Model Class Key.")
@@ -84,10 +92,7 @@ managed objects with the function CREATE." (unmanaged-object condition)))))
            (unless (managed-object-p model)
              (error 'ohm-missig-id-error :object model)))
   (:method ((model ohm-model) &rest segments)
-    (with-output-to-string (out)
-      (format out "~A" (class-name (class-of model)))
-      (when (consp segments)
-        (format out "~{:~A~}" segments)))))
+    (apply #'make-key (class-name (class-of model)) segments)))
 
 (defun create (model-class &rest initargs)
   "Creates a new managed object."
@@ -101,7 +106,7 @@ managed objects with the function CREATE." (unmanaged-object condition)))))
         (setf (slot-value instance 'id) id)
         instance))))
 
-(defun slots->plist (object)
+(defun object->plist (object)
   (loop for slot in (closer-mop:class-direct-slots (class-of object))
      nconc (let ((slot-name (closer-mop:slot-definition-name slot)))
              (when (slot-boundp object slot-name)
@@ -115,7 +120,7 @@ with CREATE.")
              (error 'ohm-missig-id-error :object model)))
   (:method ((model ohm-model))
     (with-transactional-connection ()
-      (apply #'red:hmset (object-key model) (slots->plist model))
+      (apply #'red:hmset (object-key model) (object->plist model))
       (red:sadd (class-key model 'all) (id model)))))
 
 (defgeneric del (model)
@@ -127,3 +132,23 @@ with CREATE.")
     (with-transactional-connection ()
       (red:del (object-key model))
       (red:srem (class-key model 'all) (id model)))))
+
+(defun normalize-tuples (tuples)
+  "Normalizes TUPLES to be acceptable by MAKE-INSTANCE."
+  (loop for (key value) on tuples by #'cddr
+     nconc (list (make-keyword key) value)))
+
+(defmacro retrieve-one (class forms &key connection-details)
+  (let ((gclass (gensym "class"))
+        (gattributes (gensym "attributes"))
+        (gnew-instance (gensym "new-instance")))
+    `(let ((,gclass ,class))
+       (unless (subtypep ,gclass 'ohm-model)
+         (error 'ohm-unmanged-class-error :class ,gclass))
+       (with-connection ,connection-details
+         ,(ecase (car forms)
+                 (id
+                  `(when-let* ((,gattributes (red:hgetall (make-key ,gclass ,(second forms))))
+                               (,gnew-instance (apply #'make-instance ,gclass (normalize-tuples ,gattributes))))
+                     (setf (slot-value ,gnew-instance 'id) ,(second forms))
+                     ,gnew-instance)))))))
