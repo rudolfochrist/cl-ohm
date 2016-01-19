@@ -2,4 +2,6 @@
 
 (defpackage #:cl-ohm
   (:nicknames #:ohm)
-  (:use #:cl))
+  (:use #:cl)
+  (:import-from #:alexandria
+                #:define-constant))

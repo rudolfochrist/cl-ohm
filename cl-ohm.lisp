@@ -37,21 +37,24 @@
              (format stream "Connection refused to Redis at ~A:~A with credentials ~A"
                      (host condition) (port condition) (auth condition)))))
 
+(define-condition ohm-missig-id-error (ohm-error)
+  ((unmanaged-object :initarg :object
+                     :accessor unmanaged-object))
+  (:report (lambda (condtion stream))
+           (format stream "The object ~A is missing a ID and is therefore unmanaged. Please create~
+managed objects with the function CREATE." (unmanaged-object condition))))
+
+(define-constant +global-id-counter+ "CL-OHM-GLOBAL-ID-COUNTER" :test #'string=)
+
 (defclass ohm-model ()
   ((id :reader id)))
-
-(defclass ohm-metaclass (standard-class)
-  ())
 
 (defmacro defohm (name superclasses slots)
   `(defclass ,name ,(cons 'ohm-model superclasses)
      ,slots
      (:metaclass ohm-metaclass)))
 
-(defmethod closer-mop:validate-superclass ((class ohm-metaclass) (super standard-class))
-  t)
-
-(defgeneric persisted-p (model)
+(defgeneric managed-object-p (model)
   (:documentation "Tests if the given MODEL has been persisted resp. is dirty or not.")
   (:method ((model ohm-model))
     (slot-boundp model 'id)))
@@ -65,3 +68,13 @@
         (format out "~A:~A" (class-name (class-of model)) (id model))
         (when (consp segments)
           (format out "~{:~A~}" segments))))))
+
+(defun create (model-class &rest initargs)
+  "Creates a new managed object."
+  (assert (subtypep model-class 'ohm-model) nil
+          "Cannot created an instance of ~A. Please use DEFOHM to define a suitable persistence type" model-class)
+  (let ((instance (apply #'make-instance model-class initargs)))
+    (with-connection ()
+      (let ((id (red:incr +global-id-counter+)))
+        (setf (slot-value instance 'id) id)
+        instance))))
