@@ -190,7 +190,8 @@ with CREATE.")
                (make-persisted-instances ,gclass ,gids)))
            ((eql (car params) :id)
             `(let ((,gid ,(second params)))
-               (make-persisted-instance ,gclass ,gid (fetch-object ,gclass ,gid))))
+               (when (red:exists (make-key ,gclass ,gid))
+                 (make-persisted-instance ,gclass ,gid (fetch-data ,gclass ,gid)))))
            (t
             `(let ((,gids (apply #'red:sinter
                                  (loop for (,gkey ,gvalue) on ',params by #'cddr
