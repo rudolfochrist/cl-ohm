@@ -149,6 +149,10 @@ with CREATE.")
       (red:del (object-key model))
       (red:srem (class-key model 'all) (id model)))))
 
+(defun fetch-object (class id)
+  "Fetches an object's attributes from the data store."
+  (red:hgetall (make-key class id)))
+
 (defmacro retrieve (class forms &key connection-plist)
   (let ((gclass (gensym "class"))
         (gid (gensym "id"))
@@ -163,5 +167,9 @@ with CREATE.")
                (mapcar (lambda (,gid)
                          (make-persisted-instance ,gclass
                                                   ,gid
-                                                  (red:hgetall (make-key ,gclass ,gid))))
-                       ,gids))))))))
+                                                  (fetch-object ,gclass ,gid)))
+                       ,gids))))
+         ((equal 'id (car forms))
+          `(with-connection ,connection-plist
+             (let ((,gid ,(second forms)))
+               (make-persisted-instance ,gclass ,gid (fetch-object ,gclass ,gid)))))))))
