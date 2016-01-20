@@ -125,7 +125,7 @@ managed objects with the function CREATE." (unmanaged-object condition)))))
 (defun plist->object (class plist)
   (apply #'make-instance class plist))
 
-(defmacro make-persisted-instance (class id initargs)
+(defmacro make-persisted-instance (class id &optional initargs)
   "Creates a instance ARGS. ARGS is a Redis result set.
 Obviously this is only sensible inside a WITH-CONNECTION block."
   (let ((ginstance (gensym "instance")))
@@ -135,10 +135,11 @@ Obviously this is only sensible inside a WITH-CONNECTION block."
 
 (defun make-persisted-instances (class ids)
   (loop for id in ids
-     collect (make-persisted-instance class id (fetch-object class id))))
+     collect (make-persisted-instance class id (fetch-data class id))))
 
-(defun fetch-object (class id)
-  "Fetches an object's attributes from the data store."
+(defun fetch-data (class id)
+  "Fetches an object's attributes from the data store.
+Signals an error when non-existing ID is given."
   (red:hgetall (make-key class id)))
 
 (defgeneric save (model)
@@ -163,9 +164,15 @@ with CREATE.")
            (unless (managed-object-p model)
              (error 'ohm-missig-id-error :object model)))
   (:method ((model ohm-model))
-    (with-transactional-connection ()
-      (red:del (object-key model))
-      (red:srem (class-key model 'all) (id model)))))
+    (with-connection ()
+      (let* ((indices-key (object-key model '_indices))
+             (indices (red:smembers indices-key)))
+        (red:multi)
+        (dolist (index indices)
+          (red:srem index (id model)))
+        (red:srem (class-key model 'all) (id model))
+        (red:del indices-key (object-key model))
+        (red:exec)))))
 
 (defmacro retrieve (class &rest params)
   (let ((gclass (gensym "class"))
