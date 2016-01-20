@@ -9,10 +9,10 @@
   t)
 
 (defclass ohm-slot-definition-mixin ()
-  ((index :accessor index
-          :initarg :index
-          :initform nil
-          :documentation "Indicates if this attribute should be indexed. Defaults to NIL.")))
+  ((indexp :accessor indexp
+           :initarg :indexp
+           :initform nil
+           :documentation "Indicates if this attribute should be indexed. Defaults to NIL.")))
 
 (defclass ohm-direct-slot-definition (closer-mop:standard-direct-slot-definition
                                       ohm-slot-definition-mixin)
@@ -35,6 +35,6 @@
   (let ((esd (call-next-method)))
     (loop for dsd in dslotds
        when (typep dsd 'ohm-direct-slot-definition)
-       do (setf (index esd) (index dsd))
+       do (setf (indexp esd) (indexp dsd))
        return dsd)
     esd))

@@ -4,20 +4,26 @@
 (defohm person ()
   ((first-name :initarg :first-name
                :accessor first-name
-               :index t)
+               :indexp t)
    (last-name :initarg :last-name
               :accessor last-name)))
 
+(defmacro with-unbound-slots (slots instance &body body)
+  `(let ,(mapcar (lambda (slot-name)
+                   (list slot-name `(when (slot-boundp ,instance ',slot-name)
+                                      (slot-value ,instance ',slot-name))))
+                 slots)
+     ,@body))
+
 (defmethod print-object ((object person) stream)
   (print-unreadable-object (object stream :type t :identity t)
-    (format stream "[ID: ~A] [FIRST-NAME: ~A] [LAST-NAME: ~A]"
-            (if (slot-boundp object 'id)
-                (id object)
-                "NO-ID")
-            (first-name object)
-            (last-name object))))
+    (with-unbound-slots (id first-name last-name) object
+      (format stream "(ID: ~A) (FIRST-NAME: ~A) (LAST-NAME: ~A)"
+              id first-name last-name))))
 
-(defmethod full-name ((person person))
-  (format nil "~a ~a" (first-name person) (last-name person)))
+(defmethod slot-unbound (class (instance person) slot-name)
+  (declare (ignore class))
+  (setf (slot-value instance slot-name) nil))
+
 
 (defparameter *p* (create 'person :first-name "Otto" :last-name "Dix"))
