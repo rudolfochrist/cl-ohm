@@ -17,14 +17,12 @@
   (when auth-supplied-p
     (setf (getf *redis-default-connection* :auth) auth)))
 
-(defmacro with-connection (connection-plist &body body)
-  `(redis:with-persistent-connection ,(if (null connection-plist)
-                                          *redis-default-connection*
-                                          connection-plist)
+(defmacro with-connection (() &body body)
+  `(redis:with-persistent-connection ,*redis-default-connection*
      ,@body))
 
-(defmacro with-transactional-connection (connection-plist &body body)
-  `(with-connection ,connection-plist
+(defmacro with-transactional-connection (()  &body body)
+  `(with-connection ()
      (red:multi)
      ,@body
      (red:exec)))
@@ -165,7 +163,7 @@ with CREATE.")
   "Fetches an object's attributes from the data store."
   (red:hgetall (make-key class id)))
 
-(defmacro retrieve (class forms &key connection-plist)
+(defmacro retrieve (class &rest params)
   (let ((gclass (gensym "class"))
         (gid (gensym "id"))
         (gids (gensym "ids")))
@@ -173,15 +171,15 @@ with CREATE.")
        (unless (subtypep ,gclass 'ohm-model)
          (error 'ohm-unmanged-class-error :class ,gclass))
        ,(cond
-         ((eql forms :all)
-          `(with-connection ,connection-plist
+         ((eql (car params) :all)
+          `(with-connection ()
              (let ((,gids (red:smembers (make-key ,gclass 'all))))
                (mapcar (lambda (,gid)
                          (make-persisted-instance ,gclass
                                                   ,gid
                                                   (fetch-object ,gclass ,gid)))
                        ,gids))))
-         ((equal 'id (car forms))
-          `(with-connection ,connection-plist
-             (let ((,gid ,(second forms)))
+         ((eql (car params) :id)
+          `(with-connection ()
+             (let ((,gid ,(second params)))
                (make-persisted-instance ,gclass ,gid (fetch-object ,gclass ,gid)))))))))
