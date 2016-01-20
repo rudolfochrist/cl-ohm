@@ -166,7 +166,9 @@ with CREATE.")
 (defmacro retrieve (class &rest params)
   (let ((gclass (gensym "class"))
         (gid (gensym "id"))
-        (gids (gensym "ids")))
+        (gids (gensym "ids"))
+        (gkey (gensym "key"))
+        (gvalue (gensym "value")))
     `(let ((,gclass ,class))
        (unless (subtypep ,gclass 'ohm-model)
          (error 'ohm-unmanged-class-error :class ,gclass))
@@ -182,4 +184,14 @@ with CREATE.")
          ((eql (car params) :id)
           `(with-connection ()
              (let ((,gid ,(second params)))
-               (make-persisted-instance ,gclass ,gid (fetch-object ,gclass ,gid)))))))))
+               (make-persisted-instance ,gclass ,gid (fetch-object ,gclass ,gid)))))
+         (t
+          `(with-connection ()
+             (let ((,gids (apply #'red:sinter
+                                 (loop for (,gkey ,gvalue) on ',params by #'cddr
+                                    collect (make-key ,gclass 'indices ,gkey ,gvalue)))))
+               (mapcar (lambda (,gid)
+                         (make-persisted-instance ,gclass
+                                                  ,gid
+                                                  (fetch-object ,gclass ,gid)))
+                       ,gids))))))))

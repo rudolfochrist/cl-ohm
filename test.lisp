@@ -6,7 +6,8 @@
                :accessor first-name
                :indexp t)
    (last-name :initarg :last-name
-              :accessor last-name)))
+              :accessor last-name
+              :indexp t)))
 
 (defmacro with-unbound-slots (slots instance &body body)
   `(let ,(mapcar (lambda (slot-name)
