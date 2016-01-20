@@ -6,4 +6,5 @@
   (:import-from #:alexandria
                 #:define-constant
                 #:make-keyword
+                #:when-let
                 #:when-let*))

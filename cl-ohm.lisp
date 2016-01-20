@@ -17,14 +17,14 @@
   (when auth-supplied-p
     (setf (getf *redis-default-connection* :auth) auth)))
 
-(defmacro with-connection (connection-details &body body)
-  `(redis:with-persistent-connection ,(if (null connection-details)
+(defmacro with-connection (connection-plist &body body)
+  `(redis:with-persistent-connection ,(if (null connection-plist)
                                           *redis-default-connection*
-                                          connection-details)
+                                          connection-plist)
      ,@body))
 
-(defmacro with-transactional-connection (connection-details &body body)
-  `(with-connection ,connection-details
+(defmacro with-transactional-connection (connection-plist &body body)
+  `(with-connection ,connection-plist
      (red:multi)
      ,@body
      (red:exec)))
@@ -106,11 +106,27 @@ managed objects with the function CREATE." (unmanaged-object condition)))))
         (setf (slot-value instance 'id) id)
         instance))))
 
+(defun normalize-tuples (tuples)
+  "Normalizes TUPLES to be acceptable by MAKE-INSTANCE."
+  (loop for (key value) on tuples by #'cddr
+     nconc (list (make-keyword key) value)))
+
 (defun object->plist (object)
   (loop for slot in (closer-mop:class-direct-slots (class-of object))
      nconc (let ((slot-name (closer-mop:slot-definition-name slot)))
              (when (slot-boundp object slot-name)
                (list slot-name (slot-value object slot-name))))))
+
+(defun plist->object (class plist)
+  (apply #'make-instance class plist))
+
+(defmacro make-persisted-instance (class id initargs)
+  "Creates a instance ARGS. ARGS is a Redis result set.
+Obviously this is only sensible inside a WITH-CONNECTION block."
+  (let ((ginstance (gensym "instance")))
+    `(let ((,ginstance (plist->object ,class (normalize-tuples ,initargs))))
+       (setf (slot-value ,ginstance 'id) ,id)
+       ,ginstance)))
 
 (defgeneric save (model)
   (:documentation "Saves the MODEL into the data store. Model must be a managed object defined with DEFOHM and created
@@ -133,22 +149,19 @@ with CREATE.")
       (red:del (object-key model))
       (red:srem (class-key model 'all) (id model)))))
 
-(defun normalize-tuples (tuples)
-  "Normalizes TUPLES to be acceptable by MAKE-INSTANCE."
-  (loop for (key value) on tuples by #'cddr
-     nconc (list (make-keyword key) value)))
-
-(defmacro retrieve-one (class forms &key connection-details)
+(defmacro retrieve (class forms &key connection-plist)
   (let ((gclass (gensym "class"))
-        (gattributes (gensym "attributes"))
-        (gnew-instance (gensym "new-instance")))
+        (gid (gensym "id"))
+        (gids (gensym "ids")))
     `(let ((,gclass ,class))
        (unless (subtypep ,gclass 'ohm-model)
          (error 'ohm-unmanged-class-error :class ,gclass))
-       (with-connection ,connection-details
-         ,(ecase (car forms)
-                 (id
-                  `(when-let* ((,gattributes (red:hgetall (make-key ,gclass ,(second forms))))
-                               (,gnew-instance (apply #'make-instance ,gclass (normalize-tuples ,gattributes))))
-                     (setf (slot-value ,gnew-instance 'id) ,(second forms))
-                     ,gnew-instance)))))))
+       ,(cond
+         ((eql forms :all)
+          `(with-connection ,connection-plist
+             (let ((,gids (red:smembers (make-key ,gclass 'all))))
+               (mapcar (lambda (,gid)
+                         (make-persisted-instance ,gclass
+                                                  ,gid
+                                                  (red:hgetall (make-key ,gclass ,gid))))
+                       ,gids))))))))
