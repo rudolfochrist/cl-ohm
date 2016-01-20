@@ -133,6 +133,14 @@ Obviously this is only sensible inside a WITH-CONNECTION block."
        (setf (slot-value ,ginstance 'id) ,id)
        ,ginstance)))
 
+(defun make-persisted-instances (class ids)
+  (loop for id in ids
+     collect (make-persisted-instance class id (fetch-object class id))))
+
+(defun fetch-object (class id)
+  "Fetches an object's attributes from the data store."
+  (red:hgetall (make-key class id)))
+
 (defgeneric save (model)
   (:documentation "Saves the MODEL into the data store. Model must be a managed object defined with DEFOHM and created
 with CREATE.")
@@ -159,10 +167,6 @@ with CREATE.")
       (red:del (object-key model))
       (red:srem (class-key model 'all) (id model)))))
 
-(defun fetch-object (class id)
-  "Fetches an object's attributes from the data store."
-  (red:hgetall (make-key class id)))
-
 (defmacro retrieve (class &rest params)
   (let ((gclass (gensym "class"))
         (gid (gensym "id"))
@@ -172,26 +176,16 @@ with CREATE.")
     `(let ((,gclass ,class))
        (unless (subtypep ,gclass 'ohm-model)
          (error 'ohm-unmanged-class-error :class ,gclass))
-       ,(cond
-         ((eql (car params) :all)
-          `(with-connection ()
-             (let ((,gids (red:smembers (make-key ,gclass 'all))))
-               (mapcar (lambda (,gid)
-                         (make-persisted-instance ,gclass
-                                                  ,gid
-                                                  (fetch-object ,gclass ,gid)))
-                       ,gids))))
-         ((eql (car params) :id)
-          `(with-connection ()
-             (let ((,gid ,(second params)))
-               (make-persisted-instance ,gclass ,gid (fetch-object ,gclass ,gid)))))
-         (t
-          `(with-connection ()
-             (let ((,gids (apply #'red:sinter
+       (with-connection ()
+         ,(cond
+           ((eql (car params) :all)
+            `(let ((,gids (red:smembers (make-key ,gclass 'all))))
+               (make-persisted-instances ,gclass ,gids)))
+           ((eql (car params) :id)
+            `(let ((,gid ,(second params)))
+               (make-persisted-instance ,gclass ,gid (fetch-object ,gclass ,gid))))
+           (t
+            `(let ((,gids (apply #'red:sinter
                                  (loop for (,gkey ,gvalue) on ',params by #'cddr
                                     collect (make-key ,gclass 'indices ,gkey ,gvalue)))))
-               (mapcar (lambda (,gid)
-                         (make-persisted-instance ,gclass
-                                                  ,gid
-                                                  (fetch-object ,gclass ,gid)))
-                       ,gids))))))))
+               (make-persisted-instances ,gclass ,gids))))))))
