@@ -104,6 +104,10 @@ managed objects with the function CREATE." (unmanaged-object condition)))))
         (setf (slot-value instance 'id) id)
         instance))))
 
+(defun create! (model-class &rest initargs)
+  "Creates a new managed object and saves it to the data store immediately."
+  (save (apply #'create model-class initargs)))
+
 (defun normalize-tuples (tuples)
   "Normalizes TUPLES to be acceptable by MAKE-INSTANCE."
   (loop for (key value) on tuples by #'cddr
