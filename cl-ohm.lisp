@@ -49,11 +49,11 @@
 managed objects with the function CREATE." (unmanaged-object condition)))))
 
 (define-condition ohm-unmanged-class-error (ohm-error)
-  ((class :initarg :class
-          :accessor class))
+  ((unmanaged-class :initarg :class
+                    :accessor unmanaged-class))
   (:report (lambda (condition stream)
              (format stream "The class ~A is not a persistence class. Please use a class defined by DEFOHM."
-                     (class condition)))))
+                     (unmanaged-class condition)))))
 
 (define-constant +global-id-counter+ "CL-OHM-GLOBAL-ID-COUNTER" :test #'string=)
 
