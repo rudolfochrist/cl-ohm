@@ -12,7 +12,11 @@
   ((indexp :accessor indexp
            :initarg :indexp
            :initform nil
-           :documentation "Indicates if this attribute should be indexed. Defaults to NIL.")))
+           :documentation "Indicates if this attribute should be indexed. Defaults to NIL.")
+   (counterp :accessor counterp
+             :initarg :counterp
+             :initform nil
+             :documentation "Idicates it this attribute is an atomic counter.")))
 
 (defclass ohm-direct-slot-definition (closer-mop:standard-direct-slot-definition
                                       ohm-slot-definition-mixin)
@@ -35,6 +39,7 @@
   (let ((esd (call-next-method)))
     (loop for dsd in dslotds
        when (typep dsd 'ohm-direct-slot-definition)
-       do (setf (indexp esd) (indexp dsd))
+       do (setf (indexp esd) (indexp dsd)
+                (counterp esd) (counterp dsd))
        return dsd)
     esd))

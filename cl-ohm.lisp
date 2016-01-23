@@ -215,3 +215,36 @@ with CREATE.")
                                  (loop for (,gkey ,gvalue) on ',params by #'cddr
                                     collect (make-key ,gclass 'indices ,gkey ,gvalue)))))
                (make-persisted-instances ,gclass ,gids))))))))
+
+(defgeneric counter (model slot-name)
+  (:documentation "Returns the value of the counter named SLOT-NAME.")
+  (:method :before ((model ohm-model) slot-name)
+           (declare (ignore slot-name))
+           (ensure-managed-object model))
+  (:method ((model ohm-model) slot-name)
+    (let ((slot (find-slot (class-of model) slot-name)))
+      (when (counterp slot)
+        ;; access redis for counter
+        ))))
+
+(defgeneric incr (model slot-name &optional value)
+  (:documentation "Increments the counter named SLOT-NAME by VALUE.")
+  (:method :before ((model ohm-model) slot-name &optional value)
+           (declare (ignore slot-name value))
+           (ensure-managed-object model))
+  (:method ((model ohm-model) slot-name &optional (value 1))
+    (let ((slot (find-slot (class-of model) slot-name)))
+      (when (counterp slot)
+        ;; increment
+        ))))
+
+(defgeneric decr (model slot-name &optional value)
+  (:documentation "Decrements the counter named SLOT-NAME by VALUE.")
+  (:method :before ((model ohm-model) slot-name &optional value)
+           (declare (ignore slot-name value))
+           (ensure-managed-object model))
+  (:method ((model ohm-model) slot-name &optional (value 1))
+    (let ((slot (find-slot (class-of model) slot-name)))
+      (when (counterp slot)
+        ;; decrement
+        ))))

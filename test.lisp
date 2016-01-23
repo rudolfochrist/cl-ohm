@@ -16,15 +16,23 @@
                  slots)
      ,@body))
 
-(defmethod print-object ((object person) stream)
-  (print-unreadable-object (object stream :type t :identity t)
-    (with-unbound-slots (id first-name last-name) object
-      (format stream "(ID: ~A) (FIRST-NAME: ~A) (LAST-NAME: ~A)"
-              id first-name last-name))))
-
 (defmethod slot-unbound (class (instance person) slot-name)
   (declare (ignore class))
   (setf (slot-value instance slot-name) nil))
 
+(defmethod print-object ((object person) stream)
+  (print-unreadable-object (object stream :type t :identity t)
+    (with-unbound-slots (id first-name last-name) object
+                        (format stream "(ID: ~A) (FIRST-NAME: ~A) (LAST-NAME: ~A)"
+                                id first-name last-name))))
+
 
 (defparameter *p* (create 'person :first-name "Otto" :last-name "Dix"))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  VOTINGS  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defohm candidate (person)
+  ((votings :counterp t)))
+
+(defparameter *v* (create 'candidate :first-name "Julius" :last-name "Caesar"))
