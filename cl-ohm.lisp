@@ -58,7 +58,8 @@ managed objects with the function CREATE." (unmanaged-object condition)))))
 (define-constant +global-id-counter+ "CL-OHM-GLOBAL-ID-COUNTER" :test #'string=)
 
 (defclass ohm-model ()
-  ((id :reader id)))
+  ((id :reader id)
+   (savedp :reader savedp)))
 
 (defmacro defohm (name superclasses slots)
   `(defclass ,name ,(cons 'ohm-model superclasses)
@@ -129,13 +130,13 @@ managed objects with the function CREATE." (unmanaged-object condition)))))
 (defun plist->object (class plist)
   (apply #'make-instance class plist))
 
-(defmacro make-persisted-instance (class id &optional initargs)
+(defun make-persisted-instance (class id &optional initargs)
   "Creates a instance ARGS. ARGS is a Redis result set.
 Obviously this is only sensible inside a WITH-CONNECTION block."
-  (let ((ginstance (gensym "instance")))
-    `(let ((,ginstance (plist->object ,class (normalize-tuples ,initargs))))
-       (setf (slot-value ,ginstance 'id) ,id)
-       ,ginstance)))
+  (let ((instance (plist->object class (normalize-tuples initargs))))
+    (setf (slot-value instance 'id) id)
+    (setf (slot-value instance 'savedp) t)
+    instance))
 
 (defun make-persisted-instances (class ids)
   (loop for id in ids
@@ -160,7 +161,8 @@ with CREATE.")
         (apply #'red:sadd (object-key model '_indices) index-keys)
         (dolist (index index-keys)
           (red:sadd index (id model)))
-        (red:sadd (class-key model 'all) (id model))))))
+        (red:sadd (class-key model 'all) (id model))
+        (setf (slot-value model 'savedp) t)))))
 
 (defgeneric del (model)
   (:documentation "Removes MODEL from the data store.")
