@@ -62,25 +62,36 @@ managed objects with the function CREATE." (unmanaged-object condition)))))
    (savedp :reader savedp)))
 
 (defmacro defohm (name superclasses slots)
-  `(defclass ,name ,(cons 'ohm-model superclasses)
+  `(defclass ,name ,(if superclasses superclasses `(ohm-model))
      ,slots
      (:metaclass ohm-metaclass)))
+
+(defun find-slot (class slot-name)
+  (find slot-name (closer-mop:class-direct-slots class) :key #'closer-mop:slot-definition-name))
+
+(defun ohm-model-slot-p (slot-name)
+  "Checks if slot-name is defined in OHM-MODEL."
+  (find-slot (find-class 'ohm-model) slot-name))
 
 (defgeneric managed-object-p (model)
   (:documentation "Tests if the given MODEL has been persisted resp. is dirty or not.")
   (:method ((model ohm-model))
-    (slot-boundp model 'id)))
+    (and (slot-boundp model 'id)
+         (not (null (id model))))))
 
 (defun make-key (&rest segments)
   (with-output-to-string (out)
     (format out "~{~A~^:~}" segments)))
 
+(defun ensure-managed-object (object)
+  (unless (managed-object-p object)
+    (error 'ohm-missig-id-error :object object)))
+
 (defgeneric object-key (model &rest segments)
   (:documentation "Generates an Ohm model object key.")
   (:method :before ((model ohm-model) &rest segments)
            (declare (ignore segments))
-           (unless (managed-object-p model)
-             (error 'ohm-missig-id-error :object model)))
+           (ensure-managed-object model))
   (:method ((model ohm-model) &rest segments)
     (apply #'make-key (class-name (class-of model)) (id model) segments)))
 
@@ -88,8 +99,7 @@ managed objects with the function CREATE." (unmanaged-object condition)))))
   (:documentation "Generates a Ohm Model Class Key.")
   (:method :before ((model ohm-model) &rest segments)
            (declare (ignore segments))
-           (unless (managed-object-p model)
-             (error 'ohm-missig-id-error :object model)))
+           (ensure-managed-object model))
   (:method ((model ohm-model) &rest segments)
     (apply #'make-key (class-name (class-of model)) segments)))
 
@@ -115,10 +125,14 @@ managed objects with the function CREATE." (unmanaged-object condition)))))
      nconc (list (make-keyword key) value)))
 
 (defun object->plist (object)
+  "Takes an OBJECT and represents it a plist.
+This function returns two lists. A object attributes plist and
+a second list with index keys."
   (loop with index-keys = nil
-     for slot in (closer-mop:class-direct-slots (class-of object))
+     for slot in (closer-mop:class-slots (class-of object))
      for slot-name = (closer-mop:slot-definition-name slot)
      when (slot-boundp object slot-name)
+     unless (ohm-model-slot-p slot-name)
      nconc (let ((slot-value (slot-value object slot-name)))
              (when (indexp slot)
                (push (class-key object 'indices slot-name slot-value) index-keys))
@@ -151,8 +165,7 @@ Signals an error when non-existing ID is given."
   (:documentation "Saves the MODEL into the data store. Model must be a managed object defined with DEFOHM and created
 with CREATE.")
   (:method :before ((model ohm-model))
-           (unless (managed-object-p model)
-             (error 'ohm-missig-id-error :object model)))
+           (ensure-managed-object model))
   (:method ((model ohm-model))
     (with-transactional-connection ()
       (multiple-value-bind (attributes index-keys)
@@ -167,8 +180,7 @@ with CREATE.")
 (defgeneric del (model)
   (:documentation "Removes MODEL from the data store.")
   (:method :before ((model ohm-model))
-           (unless (managed-object-p model)
-             (error 'ohm-missig-id-error :object model)))
+           (ensure-managed-object model))
   (:method ((model ohm-model))
     (with-connection ()
       (let* ((indices-key (object-key model '_indices))
