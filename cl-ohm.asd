@@ -9,5 +9,4 @@
                #:alexandria)
   :serial t
   :components ((:file "package")
-               (:file "mop")
                (:file "cl-ohm")))
