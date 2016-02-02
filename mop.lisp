@@ -11,7 +11,11 @@
   ((indexp :initform nil
            :initarg :indexp
            :accessor indexp
-           :documentation "Creates an index for this slot if indexp is T.")))
+           :documentation "Creates an index for this slot if indexp is T.")
+   (counterp :initform nil
+             :initarg :counterp
+             :accessor counterp
+             :documentation "Defines an attribute as counter.")))
 
 (defclass ohm-direct-slot-definition (closer-mop:standard-direct-slot-definition
                                       ohm-slot-definition-mixin)
@@ -35,5 +39,6 @@
   (let ((eslotd (call-next-method)))
     (loop for dslotd in dslotds
        when (typep dslotd 'ohm-direct-slot-definition)
-       do (setf (indexp eslotd) (indexp dslotd)))
+       do (setf (indexp eslotd) (indexp dslotd)
+                (counterp eslotd) (counterp dslotd)))
     eslotd))

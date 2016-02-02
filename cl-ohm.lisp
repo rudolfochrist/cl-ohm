@@ -11,11 +11,9 @@
           (name)
           "~A is not persistable. Please use DEFINE-OHM-MODEL."
           name)
-  (let ((instance (apply #'make-instance name initargs)))
-    (with-connection ()
-      (setf (slot-value instance 'id)
-            (red:incr *global-object-counter*)))
-    instance))
+  (with-connection ()
+    (let ((id (red:incr *global-object-counter*)))
+      (apply #'make-instance name :id id initargs))))
 
 (defun ensure-peristable-object (object)
   (unless (slot-boundp object 'id)

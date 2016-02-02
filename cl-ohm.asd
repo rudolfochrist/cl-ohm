@@ -12,5 +12,6 @@
                (:file "connection")
                (:file "conditions")
                (:file "mop")
+               (:file "ohm-counter")
                (:file "ohm-object")
                (:file "cl-ohm")))

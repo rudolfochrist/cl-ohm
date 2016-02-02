@@ -3,7 +3,8 @@
 (in-package #:CL-OHM)
 
 (defclass ohm-object ()
-  ((id :reader ohm-id)))
+  ((id :reader ohm-id
+       :initarg :id)))
 
 (defmethod print-object ((object ohm-object) stream)
   (print-unreadable-object (object stream :type t :identity t)
@@ -17,7 +18,7 @@
            (when rest
              (format stream " "))))))
 
-(defmacro define-ohm-model (name superclasses &key attributes)
+(defmacro define-ohm-model (name superclasses &key attributes counters)
   `(defclass ,name ,(if superclasses superclasses '(ohm-object))
      (,@(mapcar (lambda (attribute)
                   (unless (listp attribute)
@@ -28,12 +29,29 @@
                       attribute
                       (append attribute
                               (list :accessor (car attribute)))))
-                attributes))
+                attributes)
+      ,@(mapcar (lambda (counter)
+                  `(,counter
+                    :accessor ,counter
+                    :counterp t))
+                counters))
      (:metaclass ohm-class)))
+
+(defmethod initialize-instance :after ((instance ohm-object) &key)
+  (let ((slots (remove-if-not #'counterp
+                              (closer-mop:class-slots (class-of instance)))))
+    (dolist (slot slots)
+      (let ((slot-name (closer-mop:slot-definition-name slot)))
+        (setf (slot-value instance slot-name)
+              (make-instance 'ohm-counter
+                             :key (object-key instance 'counters)
+                             :name slot-name))))))
 
 (defun object->plist (object)
   "Creates a plist of OBJECT's attributes."
-  (let ((attributes (closer-mop:class-slots (class-of object))))
+  (let ((attributes (remove-if (lambda (slot)
+                                 (counterp slot))
+                               (closer-mop:class-slots (class-of object)))))
     (loop for attribute in attributes
        nconc
          (let ((attribute-name (closer-mop:slot-definition-name attribute)))
