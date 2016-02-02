@@ -1,0 +1,21 @@
+#+title: CL-OHM README
+#+date: [2016-01-30 Sat]
+#+property: :session *cl-ohm*
+
+* Installation
+
+CL-Ohm can be installed with [[https://www.quicklisp.org/beta/][Quicklisp]].
+
+#+BEGIN_SRC lisp
+(ql:quickload :cl-ohm)
+#+END_SRC
+
+* Usage
+
+** Precondition
+
+Make sure Redis is running. You can start Redis with following command:
+
+#+BEGIN_SRC sh :session none
+redis-server
+#+END_SRC
