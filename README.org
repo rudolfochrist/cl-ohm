@@ -1,21 +1,39 @@
 #+title: CL-OHM README
 #+date: [2016-01-30 Sat]
-#+property: :session *cl-ohm*
+
+This is an implementation of [[http://ohm.keyvalue.org/][Ohm]] in Common Lisp with some inspiration from [[http://eudoxia.me/crane/][Crane]] and [[https://github.com/fukamachi/datafly][datafly]].
+
+Ohm is an object-hash mapping for [[http://redis.io/][Redis]].
+
+*This is absolutely in alpha stage. Use at your own risk!*
 
 * Installation
 
-CL-Ohm can be installed with [[https://www.quicklisp.org/beta/][Quicklisp]].
+tbd.
 
-#+BEGIN_SRC lisp
-(ql:quickload :cl-ohm)
-#+END_SRC
+Currently clone the repo to your quicklisps =local-projects= folder and run
+
+: (ql:quickload :cl-ohm)
 
 * Usage
 
-** Precondition
+tbd.
 
-Make sure Redis is running. You can start Redis with following command:
+* Open points [0/8]
 
-#+BEGIN_SRC sh :session none
-redis-server
-#+END_SRC
+- [ ] lists
+- [ ] sets
+- [ ] reference
+- [ ] collection
+- [ ] sorting
+- [ ] uniques
+- [ ] querying
+  - [ ] union
+  - [ ] intersection
+  - [ ] difference
+- [ ] write docs (texinfo/html)
+
+
+* License
+
+MIT. See [[file:LICENSE][LICENSE]].
