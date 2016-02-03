@@ -12,7 +12,8 @@
           "~A is not persistable. Please use DEFINE-OHM-MODEL."
           name)
   (with-connection ()
-    (let ((id (red:incr *global-object-counter*)))
+    (let ((id (prin1-to-string
+               (red:incr *global-object-counter*))))
       (save (apply #'make-instance name :id id initargs)))))
 
 (defun ensure-id (object)
