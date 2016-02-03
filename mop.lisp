@@ -19,7 +19,11 @@
    (list-attr-p :initform nil
                 :initarg :list-attr-p
                 :accessor list-attr-p
-                :documentation "Defines an attribute as list.")))
+                :documentation "Defines an attribute as list.")
+   (element-type :initform nil
+                 :initarg :element-type
+                 :accessor element-type
+                 :documentation "Specifies the element type for lists or sets.")))
 
 (defclass ohm-direct-slot-definition (closer-mop:standard-direct-slot-definition
                                       ohm-slot-definition-mixin)
@@ -45,5 +49,6 @@
        when (typep dslotd 'ohm-direct-slot-definition)
        do (setf (indexp eslotd) (indexp dslotd)
                 (counterp eslotd) (counterp dslotd)
-                (list-attr-p eslotd) (list-attr-p dslotd)))
+                (list-attr-p eslotd) (list-attr-p dslotd)
+                (element-type eslotd) (element-type dslotd)))
     eslotd))

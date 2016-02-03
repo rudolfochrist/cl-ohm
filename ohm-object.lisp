@@ -36,9 +36,9 @@
                     :counterp t))
                 counters)
         ,@(mapcar (lambda (list)
-                    `(,list
-                      :accessor ,list
-                      :list-attr-p t))
+                    (append list
+                            (list :list-attr-p t
+                                  :accessor (car list))))
                   lists))
      (:metaclass ohm-class)))
 
@@ -54,9 +54,15 @@
                               :key (object-key instance 'counters)
                               :name slot-name)))
         ((list-attr-p slot)
-         (setf (slot-value instance slot-name)
-               (make-instance 'ohm-list
-                              :key (object-key instance slot-name))))))))
+         (let ((element-type (element-type slot)))
+           (assert (subtypep element-type 'ohm-object)
+                   (element-type)
+                   "Element type must be a persistable type. ~A is not persistable."
+                   element-type)
+           (setf (slot-value instance slot-name)
+                 (make-instance 'ohm-list
+                                :key (object-key instance slot-name)
+                                :element-type element-type))))))))
 
 (defun object->plist (object)
   "Creates a plist of OBJECT's attributes."
@@ -70,3 +76,30 @@
            (when (slot-boundp object attribute-name)
              (list (make-keyword attribute-name)
                    (slot-value object attribute-name)))))))
+
+(defun normalize-plist (plist)
+  "Creates a proper plist of the given TUPLE."
+  (loop for (key value) on plist by #'cddr
+     append (list (make-keyword key) value)))
+
+(defun plist->object (class-name plist)
+  "Creates an instance of CLASS-NAME with initargs found in plist."
+  (let ((norm-plist (normalize-plist plist)))
+    (apply #'make-instance class-name norm-plist)))
+
+(defun fetch (namespace ids)
+  "Loads objects from the data store."
+  (with-connection ()
+    (with-pipelining
+      (loop for key in (keys namespace ids)
+         do (red:hgetall key)))))
+
+(defun fetch-one (namespace id)
+  "Load one object from the data store."
+  (first (fetch namespace (list id))))
+
+(defun keys (namespace ids)
+  "Makes a list of keys for the given NAMESPACE and IDS."
+  (mapcar (lambda (id)
+            (make-key namespace id))
+          ids))

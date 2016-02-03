@@ -4,16 +4,17 @@
 
 (defclass ohm-list ()
   ((key :reader list-key
-        :initarg :key)))
+        :initarg :key)
+   (element-type :reader element-type
+                 :initarg :element-type)))
 
 (defgeneric list-add (list element)
   (:documentation "Adds a ELEMENT to the LIST. ELEMENT must be a persistable object.")
   (:method :before ((list ohm-list) (element ohm-object))
-           (declare (ignore list))
            (ensure-id element))
   (:method ((list ohm-list) (element ohm-object))
     (with-connection ()
-      (red:rpush (list-key list) (object-key element)))))
+      (red:rpush (list-key list) (ohm-id element)))))
 
 (defgeneric list-add-left (list element)
   (:documentation "Add ELEMENT to the left side of LIST.")
@@ -22,7 +23,7 @@
            (ensure-id element))
   (:method ((list ohm-list) (element ohm-object))
     (with-connection ()
-      (red:lpush (list-key list) (object-key element)))))
+      (red:lpush (list-key list) (ohm-id element)))))
 
 (defgeneric list-size (list)
   (:documentation "Returns the number of elements in the LIST.")
@@ -37,9 +38,22 @@
            (ensure-id element))
   (:method ((list ohm-list) (element ohm-object))
     (with-connection ()
-      (red:lrem (list-key list) 0 (object-key element)))))
+      (red:lrem (list-key list) 0 (ohm-id element)))))
+
+(defun generic-pop (list pop-func)
+  "Returns an object if pop-func delivers an id."
+  (let ((id (with-connection ()
+              (funcall pop-func (list-key list)))))
+    (when id
+      (plist->object (element-type list)
+                     (fetch-one (element-type list) id)))))
 
 (defgeneric list-pop (list)
-  (:documentation "Removes and returns the last element added to the LIST.")
+  (:documentation "Removes and returns an the right outermost element from the LIST.")
   (:method ((list ohm-list))
-    (cerror "Continue." "Unimplemented.")))
+    (generic-pop list #'red:rpop)))
+
+(defgeneric list-pop-left (list)
+  (:documentation "Removes and returns the left outermost element of the LIST.")
+  (:method ((list ohm-list))
+    (generic-pop list #'red:lpop)))
