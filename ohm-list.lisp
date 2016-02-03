@@ -57,3 +57,22 @@
   (:documentation "Removes and returns the left outermost element of the LIST.")
   (:method ((list ohm-list))
     (generic-pop list #'red:lpop)))
+
+(defgeneric list-index (list index)
+  (:documentation "Returns the element with INDEX from LIST.")
+  (:method ((list ohm-list) (index integer))
+    (let ((id (with-connection ()
+                (red:lindex (list-key list) index))))
+      (when id
+        (plist->object (element-type list)
+                       (fetch-one (element-type list) id))))))
+
+(defgeneric list-first (list)
+  (:documentation "Returns the first element of the LIST.")
+  (:method ((list ohm-list))
+    (list-index list 0)))
+
+(defgeneric list-last (list)
+  (:documentation "Returns the last element of the LIST.")
+  (:method ((list ohm-list))
+    (list-index list -1)))
