@@ -19,7 +19,7 @@ Currently clone the repo to your quicklisps =local-projects= folder and run
 
 tbd.
 
-* Open points [0/8]
+* Open points [0/9]
 
 - [ ] lists
 - [ ] sets
@@ -32,6 +32,7 @@ tbd.
   - [ ] intersection
   - [ ] difference
 - [ ] write docs (texinfo/html)
+- [ ] add tests
 
 
 * License
