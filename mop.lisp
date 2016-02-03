@@ -15,7 +15,11 @@
    (counterp :initform nil
              :initarg :counterp
              :accessor counterp
-             :documentation "Defines an attribute as counter.")))
+             :documentation "Defines an attribute as counter.")
+   (list-attr-p :initform nil
+                :initarg :list-attr-p
+                :accessor list-attr-p
+                :documentation "Defines an attribute as list.")))
 
 (defclass ohm-direct-slot-definition (closer-mop:standard-direct-slot-definition
                                       ohm-slot-definition-mixin)
@@ -40,5 +44,6 @@
     (loop for dslotd in dslotds
        when (typep dslotd 'ohm-direct-slot-definition)
        do (setf (indexp eslotd) (indexp dslotd)
-                (counterp eslotd) (counterp dslotd)))
+                (counterp eslotd) (counterp dslotd)
+                (list-attr-p eslotd) (list-attr-p dslotd)))
     eslotd))

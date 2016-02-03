@@ -13,5 +13,6 @@
                (:file "conditions")
                (:file "mop")
                (:file "ohm-counter")
+               (:file "ohm-list")
                (:file "ohm-object")
                (:file "cl-ohm")))
