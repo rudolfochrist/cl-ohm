@@ -83,3 +83,12 @@
           (red:srem (class-key object 'all) (ohm-id object))
           (dolist (index indices)
             (red:srem index (ohm-id object))))))))
+
+(defgeneric list-range (list start stop)
+  (:documentation "Returns a sublist of LIST from START to STOP.")
+  (:method ((list ohm-list) (start integer) (stop integer))
+    (mapcar (lambda (plist)
+              (plist->object (element-type list) plist))
+            (fetch (element-type list)
+                   (with-connection ()
+                     (red:lrange (list-key list) start stop))))))
