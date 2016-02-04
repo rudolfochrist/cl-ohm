@@ -22,7 +22,7 @@
   `(redis:with-connection ,*connection-parameters*
      ,@body))
 
-(defmacro with-transaction (() &body body)
+(defmacro with-transaction (&body body)
   `(progn
      (red:multi)
      ,@body
