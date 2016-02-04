@@ -1,5 +1,6 @@
 #+title: CL-OHM README
 #+date: [2016-01-30 Sat]
+#+startup: showall
 
 This is an implementation of [[http://ohm.keyvalue.org/][Ohm]] in Common Lisp with some inspiration from [[http://eudoxia.me/crane/][Crane]] and [[https://github.com/fukamachi/datafly][datafly]].
 
@@ -19,9 +20,9 @@ Currently clone the repo to your quicklisps =local-projects= folder and run
 
 tbd.
 
-* Open points [0/9]
+* Open points [1/9]
 
-- [ ] lists
+- [X] lists
 - [ ] sets
 - [ ] reference
 - [ ] collection
