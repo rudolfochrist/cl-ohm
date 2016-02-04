@@ -18,7 +18,7 @@
            (when rest
              (format stream " "))))))
 
-(defmacro define-ohm-model (name superclasses &key attributes counters lists)
+(defmacro define-ohm-model (name superclasses &key attributes counters lists sets)
   `(defclass ,name ,(if superclasses superclasses '(ohm-object))
      (,@(mapcar (lambda (attribute)
                   (unless (listp attribute)
@@ -39,7 +39,12 @@
                     (append list
                             (list :list-attr-p t
                                   :accessor (car list))))
-                  lists))
+                  lists)
+        ,@(mapcar (lambda (set)
+                    (append set
+                            (list :set-attr-p t
+                                  :accessor (car set))))
+                  sets))
      (:metaclass ohm-class)))
 
 (defmethod initialize-instance :after ((instance ohm-object) &key)
@@ -62,13 +67,24 @@
            (setf (slot-value instance slot-name)
                  (make-instance 'ohm-list
                                 :key (object-key instance slot-name)
+                                :element-type element-type))))
+        ((set-attr-p slot)
+         (let ((element-type (element-type slot)))
+           (assert (subtypep element-type 'ohm-object)
+                   (element-type)
+                   "Element type must be a persistable type. ~A is not persistable."
+                   element-type)
+           (setf (slot-value instance slot-name)
+                 (make-instance 'ohm-set
+                                :key (object-key instance slot-name)
                                 :element-type element-type))))))))
 
 (defun object->plist (object)
   "Creates a plist of OBJECT's attributes."
   (let ((attributes (remove-if (lambda (slot)
                                  (or (counterp slot)
-                                     (list-attr-p slot)))
+                                     (list-attr-p slot)
+                                     (set-attr-p slot)))
                                (closer-mop:class-slots (class-of object)))))
     (loop for attribute in attributes
        nconc

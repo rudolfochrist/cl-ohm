@@ -7,11 +7,13 @@
   :depends-on (#:cl-redis
                #:closer-mop
                #:alexandria)
+  :serial t
   :components ((:file "package")
                (:file "connection")
                (:file "conditions")
                (:file "mop")
-               (:file "ohm-counter")
-               (:file "ohm-list" :depends-on ("ohm-object"))
                (:file "ohm-object")
+               (:file "ohm-counter")
+               (:file "ohm-list")
+               (:file "ohm-set")
                (:file "cl-ohm")))

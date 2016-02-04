@@ -20,6 +20,10 @@
                 :initarg :list-attr-p
                 :accessor list-attr-p
                 :documentation "Defines an attribute as list.")
+   (set-attr-p :initform nil
+               :initarg :set-attr-p
+               :accessor set-attr-p
+               :documentation "Defines an attribute as set.")
    (element-type :initform nil
                  :initarg :element-type
                  :accessor element-type
@@ -50,5 +54,6 @@
        do (setf (indexp eslotd) (indexp dslotd)
                 (counterp eslotd) (counterp dslotd)
                 (list-attr-p eslotd) (list-attr-p dslotd)
+                (set-attr-p eslotd) (set-attr-p dslotd)
                 (element-type eslotd) (element-type dslotd)))
     eslotd))
