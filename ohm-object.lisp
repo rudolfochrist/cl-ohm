@@ -12,7 +12,7 @@
        for slot-name = (closer-mop:slot-definition-name slot)
        do
          (when (slot-boundp object slot-name)
-           (format stream "~A=~A"
+           (format stream "~S=~S"
                    slot-name
                    (slot-value object slot-name))
            (when rest
