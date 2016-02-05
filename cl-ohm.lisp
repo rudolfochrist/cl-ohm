@@ -5,6 +5,9 @@
 (defvar *global-object-counter*
   'cl-ohm-global-object-counter)
 
+(defvar *class-indices* (make-hash-table)
+  "Mapping of which class defined which indices.")
+
 (defun create (name &rest initargs)
   "Creates a persisted instance of NAME."
   (assert (subtypep name 'ohm-object)
@@ -41,18 +44,21 @@
 
 (defun create-indices (object)
   "Create indices for attributes with :indexp t."
-  (loop for slot in (closer-mop:class-slots (class-of object))
-     for slot-name = (closer-mop:slot-definition-name slot)
-     when (and (slot-boundp object slot-name)
-               (indexp slot))
-     do
-       (let ((index-key (class-key object
-                                   'indices
-                                   slot-name
-                                   (slot-value object slot-name))))
-         (red:sadd index-key (ohm-id object))
-         (red:sadd (object-key object 'indices) index-key)
-         (pushnew (make-keyword slot-name) (indices object)))))
+  (let ((class-name (class-name (class-of object))))
+    (setf (gethash class-name *class-indices*) '())
+    (loop for slot in (closer-mop:class-slots (class-of object))
+       for slot-name = (closer-mop:slot-definition-name slot)
+       when (and (slot-boundp object slot-name)
+                 (indexp slot))
+       do
+         (let ((index-key (class-key object
+                                     'indices
+                                     slot-name
+                                     (slot-value object slot-name))))
+           (red:sadd index-key (ohm-id object))
+           (red:sadd (object-key object 'indices) index-key)
+           (pushnew (make-keyword slot-name)
+                    (gethash class-name *class-indices*))))))
 
 (defgeneric save (object)
   (:documentation "Saves an object into the data store.")
@@ -82,23 +88,24 @@
           (dolist (index indices)
             (red:srem index (ohm-id object))))))))
 
-(defun map-indices (object attribute value)
+(defun map-indices (class-name attribute value)
   "Creates a list of index key for ATTRIBUTE and VALUE."
-  (unless (member attribute (indices object))
+  (unless (member attribute
+                  (gethash class-name *class-indices*))
     (error 'ohm-no-index-found-error :attribute attribute))
 
   (typecase value
     (list
      (mapcar (lambda (item)
-               (class-key object 'indices attribute item))
+               (make-key class-name 'indices attribute item))
              value))
     (t
-     (list (class-key object 'indices attribute value)))))
+     (list (make-key class-name 'indices attribute value)))))
 
-(defun map-attributes (object attributes)
+(defun map-attributes (class-name attributes)
   "Generates as list of index keys from ATTRIBUTES."
   (loop for (attr val) on attributes by #'cddr
-     nconc (map-indices object attr val)))
+     nconc (map-indices class-name attr val)))
 
 (defun filter (class-name &rest kwargs)
   "Find objects in the data store.
@@ -110,10 +117,9 @@ CLASS-NAME fetched."
           class-name)
   ;; create an unpersisted instance
   ;; to access the indices for this type.
-  (let* ((tmp (make-instance class-name))
-         (keys (if (null kwargs)
+  (let* ((keys (if (null kwargs)
                    (list (make-key class-name 'all))
-                   (map-attributes tmp kwargs))))
+                   (map-attributes class-name kwargs))))
     (if (> (length keys) 1)
         (make-instance 'ohm-set
                        :element-type class-name

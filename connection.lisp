@@ -27,3 +27,8 @@
      (red:multi)
      ,@body
      (red:exec)))
+
+(defun flush-db ()
+  "Erase the data store."
+  (with-connection ()
+    (red:flushdb)))

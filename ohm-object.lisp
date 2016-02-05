@@ -44,10 +44,7 @@
                     (append set
                             (list :set-attr-p t
                                   :accessor (car set))))
-                  sets)
-        (indices :initform '()
-                 :accessor indices
-                 :allocation :class))
+                  sets))
      (:metaclass ohm-class)))
 
 (defmethod initialize-instance :after ((instance ohm-object) &key)

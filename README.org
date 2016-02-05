@@ -20,20 +20,22 @@ Currently clone the repo to your quicklisps =local-projects= folder and run
 
 tbd.
 
-* Open points [1/9]
+* Open points [3/11]
 
 - [X] lists
-- [ ] sets
+- [X] sets
+  - [X] union
+  - [X] intersection
+  - [X] difference
 - [ ] reference
 - [ ] collection
 - [ ] sorting
 - [ ] uniques
-- [ ] querying
-  - [ ] union
-  - [ ] intersection
-  - [ ] difference
+- [X] querying
+- [ ] advanced querying directly in =filter=. DSL/Query language for union, intersection and difference.
 - [ ] write docs (texinfo/html)
 - [ ] add tests
+- [ ] get rid of list-* and set-* prefixes. Maybe in it's own package e.g. =s:elements= and =l:pop=, etc.
 
 
 * License

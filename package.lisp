@@ -8,4 +8,4 @@
   (:import-from #:alexandria
                 #:define-constant
                 #:make-keyword
-                #:flatten))
+                #:once-only))
