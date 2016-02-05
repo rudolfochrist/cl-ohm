@@ -47,16 +47,14 @@
 (defgeneric set-size (set)
   (:documentation "Returns the number of elements in the SET.")
   (:method ((set ohm-set))
-    (with-connection ()
-      (red:scard (set-key set)))))
+    (execute (list 'red:scard (set-key set)))))
 
 (defgeneric set-find-id (set id)
   (:documentation "Checks if ID is a member of SET.")
   (:method ((set ohm-set) (id integer))
-    (find-id set (prin1-to-string id)))
+    (set-find-id set (prin1-to-string id)))
   (:method ((set ohm-set) (id string))
-    (with-connection ()
-      (red:sismember (set-key set) id))))
+    (execute (list 'red:sismember (set-key set) id))))
 
 (defgeneric set-member (set element)
   (:documentation "Checks if ELEMENT is a member of SET.")
@@ -65,3 +63,21 @@
            (ensure-id element))
   (:method ((set ohm-set) (element ohm-object))
     (set-find-id set (ohm-id element))))
+
+(defgeneric set-ids (set)
+  (:documentation "Returns the IDs contained in SET.")
+  (:method ((set ohm-set))
+    (etypecase (set-key set)
+      (list
+       (execute (set-key set)))
+      (t
+       (with-connection ()
+         (red:smembers (set-key set)))))))
+
+(defgeneric set-elements (set)
+  (:documentation "Return the elements of SET.")
+  (:method ((set ohm-set))
+    (let ((ids (set-ids set)))
+      (mapcar (lambda (element)
+                (plist->object (element-type set) element))
+              (fetch (element-type set) ids)))))

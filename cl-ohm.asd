@@ -9,11 +9,13 @@
                #:alexandria)
   :serial t
   :components ((:file "package")
+               (:file "utils")
                (:file "connection")
                (:file "conditions")
                (:file "mop")
                (:file "ohm-object")
                (:file "ohm-counter")
                (:file "ohm-list")
+               (:file "ohm-set-algebra")
                (:file "ohm-set")
                (:file "cl-ohm")))

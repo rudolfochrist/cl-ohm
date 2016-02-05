@@ -25,9 +25,6 @@
 
 (defgeneric class-key (object &rest segments)
   (:documentation "Creates a persistence key for class of OBJECT.")
-  (:method :before ((object ohm-object) &rest segments)
-           (declare (ignore segments))
-           (ensure-id object))
   (:method ((object ohm-object) &rest segments)
     (apply #'make-key (class-name (class-of object)) segments)))
 
@@ -54,7 +51,8 @@
                                    slot-name
                                    (slot-value object slot-name))))
          (red:sadd index-key (ohm-id object))
-         (red:sadd (object-key object 'indices) index-key))))
+         (red:sadd (object-key object 'indices) index-key)
+         (pushnew (make-keyword slot-name) (indices object)))))
 
 (defgeneric save (object)
   (:documentation "Saves an object into the data store.")
@@ -83,3 +81,43 @@
           (red:srem (class-key object 'all) (ohm-id object))
           (dolist (index indices)
             (red:srem index (ohm-id object))))))))
+
+(defun map-indices (object attribute value)
+  "Creates a list of index key for ATTRIBUTE and VALUE."
+  (unless (member attribute (indices object))
+    (error 'ohm-no-index-found-error :attribute attribute))
+
+  (typecase value
+    (list
+     (mapcar (lambda (item)
+               (class-key object 'indices attribute item))
+             value))
+    (t
+     (list (class-key object 'indices attribute value)))))
+
+(defun map-attributes (object attributes)
+  "Generates as list of index keys from ATTRIBUTES."
+  (loop for (attr val) on attributes by #'cddr
+     nconc (map-indices object attr val)))
+
+(defun filter (class-name &rest kwargs)
+  "Find objects in the data store.
+If no keyword arguments are given, all objects of
+CLASS-NAME fetched."
+  (assert (subtypep class-name 'ohm-object)
+          (class-name)
+          "~A must be a persistable class."
+          class-name)
+  ;; create an unpersisted instance
+  ;; to access the indices for this type.
+  (let* ((tmp (make-instance class-name))
+         (keys (if (null kwargs)
+                   (list (make-key class-name 'all))
+                   (map-attributes tmp kwargs))))
+    (if (> (length keys) 1)
+        (make-instance 'ohm-set
+                       :element-type class-name
+                       :key (append (list 'red:sinter) keys))
+        (make-instance 'ohm-set
+                       :element-type class-name
+                       :key (first keys)))))

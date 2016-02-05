@@ -7,4 +7,5 @@
                 #:with-pipelining)
   (:import-from #:alexandria
                 #:define-constant
-                #:make-keyword))
+                #:make-keyword
+                #:flatten))

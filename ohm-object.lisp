@@ -44,7 +44,10 @@
                     (append set
                             (list :set-attr-p t
                                   :accessor (car set))))
-                  sets))
+                  sets)
+        (indices :initform '()
+                 :accessor indices
+                 :allocation :class))
      (:metaclass ohm-class)))
 
 (defmethod initialize-instance :after ((instance ohm-object) &key)
@@ -84,7 +87,9 @@
   (let ((attributes (remove-if (lambda (slot)
                                  (or (counterp slot)
                                      (list-attr-p slot)
-                                     (set-attr-p slot)))
+                                     (set-attr-p slot)
+                                     (eql 'indices (closer-mop:slot-definition-name
+                                                    slot))))
                                (closer-mop:class-slots (class-of object)))))
     (loop for attribute in attributes
        nconc
