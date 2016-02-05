@@ -89,35 +89,26 @@
              "Cannot union sets with different element types ~A and ~A"
              ,type1 ,type2)))
 
+(defun generic-set-operation (set1 set2 op)
+  (assert-same-type (element-type set1)
+                    (element-type set2))
+  (make-instance 'ohm-set
+                 :element-type (element-type set1)
+                 :key (list op
+                            (set-key set1)
+                            (set-key set2))))
+
 (defgeneric set-union (set1 set2)
   (:documentation "Union two sets. ARGS are used for FILTER.")
   (:method ((set1 ohm-set) (set2 ohm-set))
-    (assert-same-type (element-type set1)
-                      (element-type set2))
-    (make-instance 'ohm-set
-                   :element-type (element-type set1)
-                   :key (list 'red:sunion
-                              (set-key set1)
-                              (set-key set2)))))
+    (generic-set-operation set1 set2 'red:sunion)))
 
 (defgeneric set-combine (set1 set2)
   (:documentation "Combines SET1 and SET2. Some would say intersection.")
   (:method ((set1 ohm-set) (set2 ohm-set))
-    (assert-same-type (element-type set1)
-                      (element-type set2))
-    (make-instance 'ohm-set
-                   :element-type (element-type set1)
-                   :key (list 'red:sinter
-                              (set-key set1)
-                              (set-key set2)))))
+    (generic-set-operation set1 set2 'red:sinter)))
 
 (defgeneric set-except (set1 set2)
   (:documentation "Removes elements from SET1 that are also in SET2. Same people would say set-difference.")
   (:method ((set1 ohm-set) (set2 ohm-set))
-    (assert-same-type (element-type set1)
-                      (element-type set2))
-    (make-instance 'ohm-set
-                   :element-type (element-type set1)
-                   :key (list 'red:sdiff
-                              (set-key set1)
-                              (set-key set2)))))
+    (generic-set-operation set1 set2 'red:sdiff)))
