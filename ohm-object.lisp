@@ -20,15 +20,25 @@
 
 (defmacro define-ohm-model (name superclasses &key attributes counters lists sets)
   `(defclass ,name ,(if superclasses superclasses '(ohm-object))
-     (,@(mapcar (lambda (attribute)
-                  (unless (listp attribute)
-                    (setf attribute (list attribute)))
-                  (if (or (getf (cdr attribute) :reader)
-                          (getf (cdr attribute) :writer)
-                          (getf (cdr attribute) :accessor))
-                      attribute
-                      (append attribute
-                              (list :accessor (car attribute)))))
+     (
+      ,@(mapcar (lambda (attribute)
+                  (let ((attr attribute))
+                    ;; make attribute a list
+                    (unless (listp attr)
+                      (setf attr (list attr)))
+                    ;; add accessor if missing
+                    (unless (or (getf (cdr attr) :reader)
+                                (getf (cdr attr) :writer)
+                                (getf (cdr attr) :accessor))
+                      (setf attr
+                            (append attr
+                                    (list :accessor (car attr)))))
+                    ;; add initarg if missing
+                    (unless (getf (cdr attr) :initarg)
+                      (setf attr
+                            (append attr
+                                    (list :initarg (car attr)))))
+                    attr))
                 attributes)
       ,@(mapcar (lambda (counter)
                   `(,counter
