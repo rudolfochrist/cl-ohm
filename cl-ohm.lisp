@@ -153,3 +153,13 @@ CLASS-NAME fetched."
         (make-instance 'ohm-set
                        :element-type class-name
                        :key (first keys)))))
+
+(defun find-with (class-name attribute value)
+  "Find an object with unique value. e.g.
+\(find-one 'user :email \"foo@foo.com\"\)"
+  (let* ((key (make-key class-name 'uniques attribute))
+         (id (with-connection ()
+               (red:hget key value))))
+    (when id
+      (plist->object class-name
+                     (fetch-one class-name id)))))
