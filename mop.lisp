@@ -12,6 +12,10 @@
            :initarg :indexp
            :accessor indexp
            :documentation "Creates an index for this slot if indexp is T.")
+   (uniquep :initform nil
+            :initarg :uniquep
+            :accessor uniquep
+            :documentation "Indicates that values stored in this attribute must be unique between all instances.")
    (counterp :initform nil
              :initarg :counterp
              :accessor counterp
@@ -52,6 +56,7 @@
     (loop for dslotd in dslotds
        when (typep dslotd 'ohm-direct-slot-definition)
        do (setf (indexp eslotd) (indexp dslotd)
+                (uniquep eslotd) (uniquep dslotd)
                 (counterp eslotd) (counterp dslotd)
                 (list-attr-p eslotd) (list-attr-p dslotd)
                 (set-attr-p eslotd) (set-attr-p dslotd)

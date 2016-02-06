@@ -37,7 +37,7 @@
                     (unless (getf (cdr attr) :initarg)
                       (setf attr
                             (append attr
-                                    (list :initarg (car attr)))))
+                                    (list :initarg (intern (string (car attr)) :keyword)))))
                     attr))
                 attributes)
       ,@(mapcar (lambda (counter)

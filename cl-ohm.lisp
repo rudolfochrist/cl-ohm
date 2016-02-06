@@ -60,6 +60,19 @@
            (pushnew (make-keyword slot-name)
                     (gethash class-name *class-indices*))))))
 
+(defun check-uniques (object)
+  "Checks for constraints on object properties."
+  (let ((uniques (remove-if-not #'uniquep (closer-mop:class-slots (class-of object)))))
+    (loop for slot in uniques
+       for slot-name = (closer-mop:slot-definition-name slot)
+       when (slot-boundp object slot-name)
+       do (let ((key (class-key object 'uniques slot-name))
+                (slot-value (slot-value object slot-name)))
+            (when (red:sismember key slot-value)
+              (error 'ohm-unique-constraint-violation
+                     :value slot-value))
+            (red:sadd key slot-value)))))
+
 (defgeneric save (object)
   (:documentation "Saves an object into the data store.")
   (:method :before ((object ohm-object))
@@ -67,11 +80,23 @@
   (:method ((object ohm-object))
     (let ((plist (object->plist object)))
       (with-connection ()
-        (with-transaction
-          (apply #'red:hmset (object-key object) plist)
-          (red:sadd (class-key object 'all) (ohm-id object))
-          (create-indices object)))
+        (check-uniques object)
+        (with-pipelining
+          (with-transaction
+            (apply #'red:hmset (object-key object) plist)
+            (red:sadd (class-key object 'all) (ohm-id object))
+            (create-indices object))))
       object)))
+
+(defun remove-uniques (object)
+  (let ((uniques (remove-if-not
+                  #'uniquep
+                  (closer-mop:class-slots (class-of object)))))
+    (loop for slot in uniques
+       for slot-name = (closer-mop:slot-definition-name slot)
+       when (slot-boundp object slot-name)
+       do (let ((key (class-key object 'uniques slot-name)))
+            (red:srem key (slot-value object slot-name))))))
 
 (defgeneric del (object)
   (:documentation "Removes OBJECT from the data store.")
@@ -81,6 +106,7 @@
     (with-connection ()
       (let ((indices (red:smembers (object-key object 'indices))))
         (with-transaction
+          (remove-uniques object)
           (red:del (object-key object)
                    (object-key object 'indices)
                    (object-key object 'counters))
