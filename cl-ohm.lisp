@@ -68,10 +68,10 @@
        when (slot-boundp object slot-name)
        do (let ((key (class-key object 'uniques slot-name))
                 (slot-value (slot-value object slot-name)))
-            (when (red:sismember key slot-value)
+            (when (red:hexists key slot-value)
               (error 'ohm-unique-constraint-violation
                      :value slot-value))
-            (red:sadd key slot-value)))))
+            (red:hset key slot-value (ohm-id object))))))
 
 (defgeneric save (object)
   (:documentation "Saves an object into the data store.")
@@ -96,7 +96,7 @@
        for slot-name = (closer-mop:slot-definition-name slot)
        when (slot-boundp object slot-name)
        do (let ((key (class-key object 'uniques slot-name)))
-            (red:srem key (slot-value object slot-name))))))
+            (red:hdel key (slot-value object slot-name))))))
 
 (defgeneric del (object)
   (:documentation "Removes OBJECT from the data store.")

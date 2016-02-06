@@ -21,4 +21,4 @@
   ((value :initarg :value
           :reader value))
   (:report (lambda (condition stream)
-             (format stream "~A must be unique" (value condition)))))
+             (format stream "~A must be unique." (value condition)))))
