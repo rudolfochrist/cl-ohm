@@ -2,12 +2,13 @@
 
 (in-package #:CL-OHM)
 
-(defvar *default-connection-parameters*
-  (list :host (vector 127 0 0 1)
-        :port 6379
-        :auth nil))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defvar *default-connection-parameters*
+    (list :host (vector 127 0 0 1)
+          :port 6379
+          :auth nil))
 
-(defparameter *connection-parameters* *default-connection-parameters*)
+  (defvar *connection-parameters* *default-connection-parameters*))
 
 (defun setup-redis-connection (&key
                                  (host #(127 0 0 1))
