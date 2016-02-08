@@ -154,6 +154,17 @@ CLASS-NAME fetched."
                        :element-type class-name
                        :key (first keys)))))
 
+(defgeneric find-id (class-name id)
+  (:documentation "Retrieves an object by id from the data store.")
+  (:method (class-name (id integer))
+    (find-id class-name (prin1-to-string id)))
+  (:method (class-name (id string))
+    (let ((id-exists-p (with-connection ()
+                         (red:sismember (make-key class-name 'all) id))))
+      (when id-exists-p
+        (plist->object class-name
+                       (fetch-one class-name id))))))
+
 (defun find-with (class-name attribute value)
   "Find an object with unique value. e.g.
 \(find-one 'user :email \"foo@foo.com\"\)"
