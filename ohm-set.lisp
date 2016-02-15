@@ -140,3 +140,12 @@ ATTRIBUTE can either be a keyword, symbol or string."
           (execute (append (list 'red:sort (set-key set)) args))
           (fetch (element-type set)
                  (execute (append (list 'red:sort (set-key set)) args)))))))
+
+(defgeneric set-sort-by (set key &key desc alpha start end get store)
+  (:documentation "Sorts the objects in SET by it's property KEY.")
+  (:method ((set ohm-set) key &key desc alpha start end get store)
+    (set-sort set
+              :by (make-sort-key set key)
+              :desc desc :alpha alpha
+              :start start :end end
+              :get get :store store)))
