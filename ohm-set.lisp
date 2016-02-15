@@ -113,15 +113,30 @@
   (:method ((set1 ohm-set) (set2 ohm-set))
     (generic-set-operation set1 set2 'red:sdiff)))
 
-(defgeneric set-sort (set &key desc alpha)
+(defun make-sort-key (set attribute)
+  "Creates a sort key for the element type of SET.
+ATTRIBUTE can either be a keyword, symbol or string."
+  (make-key (element-type set)
+            (format nil "*->~A"
+                    (string-upcase (string attribute)))))
+
+(defgeneric set-sort (set &key desc alpha start end by get store)
   (:documentation "Sorts the SET.")
-  (:method ((set ohm-set) &key desc alpha start end)
+  (:method ((set ohm-set) &key desc alpha start end by get store)
     (let ((args (append (when desc
                           (list :desc t))
                         (when alpha
                           (list :alpha t))
                         (when start
                           (list :start start
-                                :end end)))))
-      (fetch (element-type set)
-             (execute (append (list 'red:sort (set-key set)) args))))))
+                                :end end))
+                        (when by
+                          (list :by by))
+                        (when get
+                          (list :get (make-sort-key set get)))
+                        (when store
+                          (list :store store)))))
+      (if get
+          (execute (append (list 'red:sort (set-key set)) args))
+          (fetch (element-type set)
+                 (execute (append (list 'red:sort (set-key set)) args)))))))
