@@ -20,7 +20,7 @@ Currently clone the repo to your quicklisps =local-projects= folder and run
 
 tbd.
 
-* Open points [6/11]
+* Open points [5/11]
 
 - [X] lists
 - [X] sets
@@ -32,10 +32,10 @@ tbd.
 - [X] sorting
 - [X] uniques
 - [X] querying
-- [ ] advanced querying directly in =filter=. DSL/Query language for union, intersection and difference.
-- [X] write docs (readme/texinfo/html)
+- [ ] write docs (readme/texinfo/html)
 - [ ] add tests
-- [ ] get rid of list-* and set-* prefixes. Maybe in it's own package e.g. =s:elements= and =l:pop=, etc.
+- [ ] think about getting rid of list-* and set-* prefixes. Maybe in it's own package e.g. =s:elements= and =l:pop=, etc.
+- [ ] transfer those open points to issues
 
 
 * License
