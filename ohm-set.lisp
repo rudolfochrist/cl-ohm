@@ -2,13 +2,8 @@
 
 (in-package #:cl-ohm)
 
-(defclass ohm-set ()
-  ;; TODO: those slots should be refactored to it's own
-  ;; mixin, since it's basically the same everywhere.
-  ((key :reader set-key
-        :initarg :key)
-   (element-type :reader element-type
-                 :initarg :element-type)))
+(defclass ohm-set (ohm-key-mixin)
+  ())
 
 (defgeneric set-add (set element)
   (:documentation "Add the ELEMENT to the SET. Except ELEMENT is already a member.")
@@ -17,7 +12,7 @@
            (ensure-id element))
   (:method ((set ohm-set) (element ohm-object))
     (with-connection ()
-      (red:sadd (set-key set) (ohm-id element)))))
+      (red:sadd (key set) (ohm-id element)))))
 
 (defgeneric set-remove (set element)
   (:documentation "Removes the ELEMENT from the SET. Does nothing if ELEMENT is not a member.")
@@ -26,7 +21,7 @@
            (ensure-id element))
   (:method ((set ohm-set) (element ohm-object))
     (with-connection ()
-      (red:srem (set-key set) (ohm-id element)))))
+      (red:srem (key set) (ohm-id element)))))
 
 (defgeneric set-replace (set new-elements)
   (:documentation "Replaces all elements in SET with NEW-ELEMENTS.")
@@ -37,8 +32,8 @@
     (let ((ids (mapcar #'ohm-id new-elements)))
       (with-connection ()
         (with-transaction
-          (red:del (set-key set))
-          (apply #'red:sadd (set-key set) ids))))))
+          (red:del (key set))
+          (apply #'red:sadd (key set) ids))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  SET OPERATIONS  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -47,14 +42,14 @@
 (defgeneric set-size (set)
   (:documentation "Returns the number of elements in the SET.")
   (:method ((set ohm-set))
-    (execute (list 'red:scard (set-key set)))))
+    (execute (list 'red:scard (key set)))))
 
 (defgeneric set-find-id (set id)
   (:documentation "Checks if ID is a member of SET.")
   (:method ((set ohm-set) (id integer))
     (set-find-id set (prin1-to-string id)))
   (:method ((set ohm-set) (id string))
-    (execute (list 'red:sismember (set-key set) id))))
+    (execute (list 'red:sismember (key set) id))))
 
 (defgeneric set-member (set element)
   (:documentation "Checks if ELEMENT is a member of SET.")
@@ -67,12 +62,12 @@
 (defgeneric set-ids (set)
   (:documentation "Returns the IDs contained in SET.")
   (:method ((set ohm-set))
-    (etypecase (set-key set)
+    (etypecase (key set)
       (list
-       (execute (set-key set)))
+       (execute (key set)))
       (t
        (with-connection ()
-         (red:smembers (set-key set)))))))
+         (red:smembers (key set)))))))
 
 (defgeneric set-elements (set)
   (:documentation "Return the elements of SET.")
@@ -95,8 +90,8 @@
   (make-instance 'ohm-set
                  :element-type (element-type set1)
                  :key (list op
-                            (set-key set1)
-                            (set-key set2))))
+                            (key set1)
+                            (key set2))))
 
 (defgeneric set-union (set1 set2)
   (:documentation "Union two sets. ARGS are used for FILTER.")
@@ -137,9 +132,9 @@ ATTRIBUTE can either be a keyword, symbol or string."
                         (when store
                           (list :store store)))))
       (if get
-          (execute (append (list 'red:sort (set-key set)) args))
+          (execute (append (list 'red:sort (key set)) args))
           (fetch (element-type set)
-                 (execute (append (list 'red:sort (set-key set)) args)))))))
+                 (execute (append (list 'red:sort (key set)) args)))))))
 
 (defgeneric set-sort-by (set key &key desc alpha start end get store)
   (:documentation "Sorts the objects in SET by it's property KEY.")

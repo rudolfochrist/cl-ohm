@@ -2,11 +2,15 @@
 
 (in-package #:cl-ohm)
 
-(defclass ohm-list ()
-  ((key :reader list-key
+(defclass ohm-key-mixin ()
+  ((key :reader key
         :initarg :key)
    (element-type :reader element-type
-                 :initarg :element-type)))
+                 :initarg :element-type))
+  (:documentation "Mixin of key and element-type."))
+
+(defclass ohm-list (ohm-key-mixin)
+  ())
 
 (defgeneric list-add (list element)
   (:documentation "Adds a ELEMENT to the LIST. ELEMENT must be a persistable object.")
@@ -14,7 +18,7 @@
            (ensure-id element))
   (:method ((list ohm-list) (element ohm-object))
     (with-connection ()
-      (red:rpush (list-key list) (ohm-id element)))))
+      (red:rpush (key list) (ohm-id element)))))
 
 (defgeneric list-add-left (list element)
   (:documentation "Add ELEMENT to the left side of LIST.")
@@ -23,13 +27,13 @@
            (ensure-id element))
   (:method ((list ohm-list) (element ohm-object))
     (with-connection ()
-      (red:lpush (list-key list) (ohm-id element)))))
+      (red:lpush (key list) (ohm-id element)))))
 
 (defgeneric list-size (list)
   (:documentation "Returns the number of elements in the LIST.")
   (:method ((list ohm-list))
     (with-connection ()
-      (red:llen (list-key list)))))
+      (red:llen (key list)))))
 
 (defgeneric list-remove (list element)
   (:documentation "Removes ELEMENT from the LIST.")
@@ -38,12 +42,12 @@
            (ensure-id element))
   (:method ((list ohm-list) (element ohm-object))
     (with-connection ()
-      (red:lrem (list-key list) 0 (ohm-id element)))))
+      (red:lrem (key list) 0 (ohm-id element)))))
 
 (defun list-access (list pop-func &rest args)
   "Returns an object if pop-func delivers an id."
   (let ((id (with-connection ()
-              (apply pop-func (list-key list) args))))
+              (apply pop-func (key list) args))))
     (when id
       (plist->object (element-type list)
                      (fetch-one (element-type list) id)))))
@@ -77,7 +81,7 @@
   (:documentation "Returns the IDs stored in LIST.")
   (:method ((list ohm-list) &optional (start 0) (stop -1))
     (with-connection ()
-      (red:lrange (list-key list) start stop))))
+      (red:lrange (key list) start stop))))
 
 (defgeneric list-member (list element)
   (:documentation "Checks if ELEMENT is a member of LIST.")
@@ -106,9 +110,9 @@
     (let ((ids (mapcar #'ohm-id new-elements)))
       (with-connection ()
         (with-transaction
-          (red:del (list-key list))
+          (red:del (key list))
           (dolist (id ids)
-            (red:rpush (list-key list) id)))))))
+            (red:rpush (key list) id)))))))
 
 (defgeneric list-elements (list)
   (:documentation "Returns all elements in LIST.")

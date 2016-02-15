@@ -1,6 +1,6 @@
 ;;; ohm-object.lisp
 
-(in-package #:CL-OHM)
+(in-package #:cl-ohm)
 
 (defclass ohm-object ()
   ((id :reader ohm-id
