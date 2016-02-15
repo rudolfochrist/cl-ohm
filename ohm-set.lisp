@@ -112,3 +112,16 @@
   (:documentation "Removes elements from SET1 that are also in SET2. Same people would say set-difference.")
   (:method ((set1 ohm-set) (set2 ohm-set))
     (generic-set-operation set1 set2 'red:sdiff)))
+
+(defgeneric set-sort (set &key desc alpha)
+  (:documentation "Sorts the SET.")
+  (:method ((set ohm-set) &key desc alpha start end)
+    (let ((args (append (when desc
+                          (list :desc t))
+                        (when alpha
+                          (list :alpha t))
+                        (when start
+                          (list :start start
+                                :end end)))))
+      (fetch (element-type set)
+             (execute (append (list 'red:sort (set-key set)) args))))))
