@@ -3,6 +3,8 @@
 (defpackage #:cl-ohm
   (:nicknames #:ohm)
   (:use #:cl)
+  (:shadow #:remove #:pop #:first #:last #:member
+           #:replace)
   (:import-from #:redis
                 #:with-pipelining)
   (:import-from #:alexandria

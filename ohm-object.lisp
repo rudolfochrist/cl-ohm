@@ -124,7 +124,7 @@
 
 (defun fetch-one (namespace id)
   "Load one object from the data store."
-  (first (fetch namespace (list id))))
+  (cl:first (fetch namespace (list id))))
 
 (defun keys (namespace ids)
   "Makes a list of keys for the given NAMESPACE and IDS."

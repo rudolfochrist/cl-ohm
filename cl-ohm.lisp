@@ -116,8 +116,8 @@
 
 (defun map-indices (class-name attribute value)
   "Creates a list of index key for ATTRIBUTE and VALUE."
-  (unless (member attribute
-                  (gethash class-name *class-indices*))
+  (unless (cl:member attribute
+                     (gethash class-name *class-indices*))
     (error 'ohm-no-index-found-error :attribute attribute))
 
   (typecase value
@@ -152,7 +152,7 @@ CLASS-NAME fetched."
                        :key (append (list 'red:sinter) keys))
         (make-instance 'ohm-set
                        :element-type class-name
-                       :key (first keys)))))
+                       :key (cl:first keys)))))
 
 (defgeneric find-id (class-name id)
   (:documentation "Retrieves an object by id from the data store.")

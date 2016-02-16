@@ -52,4 +52,4 @@
                             (dolist (op ops)
                               (apply #'funcall op))
                             (apply #'red:del ids)))))
-           (nth 1 (first (last results)))))))))
+           (nth 1 (cl:first (cl:last results)))))))))
