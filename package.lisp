@@ -4,7 +4,7 @@
   (:nicknames #:ohm)
   (:use #:cl)
   (:shadow #:remove #:pop #:first #:last #:member
-           #:replace)
+           #:replace #:union #:sort)
   (:import-from #:redis
                 #:with-pipelining)
   (:import-from #:alexandria

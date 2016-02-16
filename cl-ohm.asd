@@ -19,6 +19,7 @@
                (:file "mop")
                (:file "ohm-object")
                (:file "ohm-counter")
+               (:file "ohm-collection")
                (:file "ohm-list")
                (:file "ohm-set-algebra")
                (:file "ohm-set")

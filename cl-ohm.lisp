@@ -154,7 +154,10 @@ CLASS-NAME fetched."
                        :element-type class-name
                        :key (cl:first keys)))))
 
-(defgeneric find-id (class-name id)
+;;; TODO: put this into filter like:
+;;; (filter 'person :id 5) or
+;;; (filter 'person :id "5")
+(defgeneric filter-id (class-name id)
   (:documentation "Retrieves an object by id from the data store.")
   (:method (class-name (id integer))
     (find-id class-name (prin1-to-string id)))
@@ -165,7 +168,9 @@ CLASS-NAME fetched."
         (plist->object class-name
                        (fetch-one class-name id))))))
 
-(defun find-with (class-name attribute value)
+;;; TODO: put that into filter like:
+;;; (filter 'person :with (:email "e@example.org"))
+(defun filter-with (class-name attribute value)
   "Find an object with unique value. e.g.
 \(find-one 'user :email \"foo@foo.com\"\)"
   (let* ((key (make-key class-name 'uniques attribute))
