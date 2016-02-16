@@ -160,7 +160,7 @@ CLASS-NAME fetched."
 (defgeneric filter-id (class-name id)
   (:documentation "Retrieves an object by id from the data store.")
   (:method (class-name (id integer))
-    (find-id class-name (prin1-to-string id)))
+    (filter-id class-name (prin1-to-string id)))
   (:method (class-name (id string))
     (let ((id-exists-p (with-connection ()
                          (red:sismember (make-key class-name 'all) id))))

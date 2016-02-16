@@ -1,5 +1,7 @@
 ;;; ohm-collection.lisp
 
+(in-package #:cl-ohm)
+
 (defclass ohm-collection ()
   ((key :reader key
         :initarg :key)
