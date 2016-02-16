@@ -10,4 +10,54 @@
   (:import-from #:alexandria
                 #:define-constant
                 #:make-keyword
-                #:once-only))
+                #:once-only)
+  ;; high-level
+  (:export
+   #:class-key
+   #:object-key
+   #:create
+   #:save
+   #:del
+   #:filter
+   #:filter-id
+   #:filter-with
+   #:define-ohm-model)
+  ;; conditions
+  (:export
+   #:ohm-missing-id-error
+   #:ohm-no-index-found-error
+   #:ohm-unique-constraint-violation)
+  ;; connection
+  (:export
+   #:setup-redis-connection
+   #:with-connection
+   #:with-transaction
+   #:flush-db)
+  ;; counter
+  (:export
+   #:counter
+   #:incr
+   #:decr)
+  ;; sets & lists
+  (:export
+   #:add
+   #:remove
+   #:replace
+   #:size
+   #:member
+   #:elements
+   #:add-left
+   #:pop
+   #:pop-left
+   #:index
+   #:first
+   #:last
+   #:list-ids
+   #:range
+   #:find-id
+   #:set-ids
+   #:union
+   #:combine
+   #:except
+   #:sort
+   #:sort-by))
