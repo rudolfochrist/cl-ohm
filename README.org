@@ -40,4 +40,4 @@ tbd.
 
 * License
 
-MIT. See [[file:LICENSE][LICENSE]].
+MIT Copyright (c) 2016 Sebastian Christ
