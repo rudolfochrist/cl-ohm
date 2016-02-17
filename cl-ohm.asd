@@ -26,4 +26,17 @@
                (:file "cl-ohm"))
   :depends-on (#:alexandria
                #:closer-mop
-               #:cl-redis))
+               #:cl-redis)
+  :in-order-to ((test-op (load-op :cl-ohm/test)))
+  :perform (test-op (op system)
+                    (asdf:clear-system system)
+                    (uiop:symbol-call :5am :run!)))
+
+(defsystem #:cl-ohm/test
+  :serial t
+  :components ((:module :test
+                        :serial t
+                        :components
+                        ((:file "attributes"))))
+  :depends-on (#:cl-ohm
+               #:fiveam))
