@@ -30,6 +30,28 @@
     (5am:signals ohm-no-index-found-error
       (filter 'person :eye-color "green"))))
 
+(5am:test filtering
+  (flush-db)
+  (create 'person
+          :first-name "Frank"
+          :last-name "Miller"
+          :country "USA")
+  (create 'person
+          :first-name "Frank"
+          :last-name "Müller"
+          :country "Germany")
+  (create 'person
+          :first-name "Mario"
+          :last-name "Mario"
+          :country "Italy")
+
+  (5am:is (= 3
+             (size (filter 'person))))
+  (5am:is (= 2
+             (size (filter 'person :first-name "Frank"))))
+  (5am:is (= 1
+             (size (filter 'person :first-name "Frank" :country "Germany")))))
+
 (define-ohm-model user (person)
   :attributes ((email :uniquep t)))
 
