@@ -30,13 +30,17 @@
   :in-order-to ((test-op (load-op :cl-ohm/test)))
   :perform (test-op (op system)
                     (asdf:clear-system system)
-                    (uiop:symbol-call :5am :run!)))
+                    (uiop:symbol-call :cl-ohm :run-all-tests)))
 
 (defsystem #:cl-ohm/test
   :serial t
-  :components ((:module :test
+  :components ((:module "test"
                         :serial t
                         :components
-                        ((:file "attributes"))))
+                        ((:file "attributes")
+                         (:file "counters")
+                         (:file "lists")
+                         (:file "sets")
+                         (:file "run-tests"))))
   :depends-on (#:cl-ohm
                #:fiveam))

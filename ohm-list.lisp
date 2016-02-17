@@ -76,7 +76,7 @@
     (mapcar (lambda (plist)
               (plist->object (element-type list) plist))
             (fetch (element-type list)
-                   (list-ids list)))))
+                   (list-ids list start stop)))))
 
 (defmethod replace ((list ohm-list) new-elements)
   (let ((ids (mapcar #'ohm-id new-elements)))

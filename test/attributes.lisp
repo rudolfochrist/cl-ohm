@@ -2,6 +2,9 @@
 
 (in-package #:cl-ohm)
 
+(5am:def-suite attributes)
+(5am:in-suite attributes)
+
 (define-ohm-model person ()
   :attributes ((first-name :indexp t)
                (last-name :indexp t)
@@ -30,6 +33,14 @@
     (5am:signals ohm-no-index-found-error
       (filter 'person :eye-color "green"))))
 
+(5am:test chaning-attrinutes
+  (flush-db)
+  (let ((bill (create 'person :first-name "Bill")))
+    (5am:is (string= "Bill" (first-name (filter-id 'person (ohm-id bill)))))
+    (setf (first-name bill) "William")
+    (save bill)
+    (5am:is (string= "William" (first-name (filter-id 'person (ohm-id bill)))))))
+
 (5am:test filtering
   (flush-db)
   (create 'person
@@ -51,6 +62,13 @@
              (size (filter 'person :first-name "Frank"))))
   (5am:is (= 1
              (size (filter 'person :first-name "Frank" :country "Germany")))))
+
+(5am:test deleting
+  (flush-db)
+  (let ((bill (create 'person :first-name "Bill")))
+    (5am:is (filter-id 'person (ohm-id bill)))
+    (del bill)
+    (5am:is (not (filter-id 'person (ohm-id bill))))))
 
 (define-ohm-model user (person)
   :attributes ((email :uniquep t)))

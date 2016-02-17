@@ -21,10 +21,6 @@
           (red:del (key set))
           (apply #'red:sadd (key set) ids))))))
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  SET OPERATIONS  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 (defmethod size ((set ohm-set))
   (execute (list 'red:scard (key set))))
 
