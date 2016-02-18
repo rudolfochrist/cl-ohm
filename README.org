@@ -12,7 +12,8 @@ Ohm is an object-hash mapping for [[http://redis.io/][Redis]].
 
 * Installation
 
-Please download and install [[http://redis.io/download][Redis]]. Be sure to check your systems package manager (APT, YUM, Hombrew, Ports, etc.) because there is a high change Redis is available there.
+Please download and install [[http://redis.io/download][Redis]] (or check if it is available through the package manager of your
+system. Which is very likely).
 
 Currently clone the repo to your quicklisps =local-projects= folder and run
 
@@ -52,7 +53,7 @@ You can create new persisted objects with =CREATE=:
 #+END_SRC
 
 Attributes are setfable like ordinary objects slots (Note: if you don't provide readers or writers
-for an attribute an accessor will be created) but has to be *explicitly saved to be persisted*.
+for an attribute, an accessor will be created) but has to be *explicitly saved to be persisted*.
 
 #+BEGIN_SRC lisp
 (ohm:create 'person :first-name "Bill")
@@ -95,7 +96,7 @@ If you omit any attribute specifiers from =FILTER= than all objects for the give
 
 Each attribute marked as =:UNIQUEP= must be unique for all instances of a given model. Considering the
 =person= model from above this means two instances cannot have the same =email=. =:UNIQUEP= also creates an
-index query-able with =FILTER-WITH=.
+index, query-able with =FILTER-WITH=.
 
 #+BEGIN_SRC lisp
 (ohm:filter-with 'person :email "e@example.org")
@@ -105,7 +106,7 @@ This load the =person= object with =email=e@example.org=
 
 ** Counters
 
-Counters let you atomically count.
+Counters let you count atomically.
 
 #+BEGIN_SRC lisp
 (ohm:define-ohm-model candidate (person)
