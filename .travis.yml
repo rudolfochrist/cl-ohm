@@ -37,7 +37,7 @@ cache:
     - $HOME/.config/common-lisp
 
 script:
-  - ros -l fiveam -l cl-coveralls
+  - ros -s fiveam -s cl-coveralls
         -e '(ql:quickload (list :cl-ohm :cl-ohm/test))'
         -e '(setf 5am:*debug-on-error* t
                   5am:*debug-on-failure* t)'
