@@ -23,6 +23,11 @@ env:
     - LISP=cmucl
     - LISP=alisp
 
+matrix:
+  allow_failures:
+    - env: LISP=clisp
+    - env: LISP=cmucl
+
 install:
   - curl -L https://raw.githubusercontent.com/snmsts/roswell/release/scripts/install-for-ci.sh | sh
   - ros install fiveam
