@@ -2,6 +2,8 @@
 #+date: [2016-01-30 Sat]
 #+startup: showall
 
+[[https://travis-ci.org/rudolfochrist/cl-ohm.svg?branch=master][Build Status]]
+
 This is an implementation of [[http://ohm.keyvalue.org/][Ohm]] in Common Lisp with some inspiration from [[http://eudoxia.me/crane/][Crane]] and [[https://github.com/fukamachi/datafly][datafly]].
 
 Ohm is an object-hash mapping for [[http://redis.io/][Redis]].
@@ -20,7 +22,7 @@ Currently clone the repo to your quicklisps =local-projects= folder and run
 
 tbd.
 
-* Open points [6/11]
+* Open points [7/11]
 
 - [X] lists
 - [X] sets
@@ -33,7 +35,7 @@ tbd.
 - [X] uniques
 - [X] querying
 - [ ] write docs (readme/texinfo/html)
-- [ ] add tests
+- [X] add tests
 - [X] think about getting rid of list-* and set-* prefixes. Maybe in it's own package e.g. =s:elements= and =l:pop=, etc.
 - [ ] transfer those open points to issues
 
