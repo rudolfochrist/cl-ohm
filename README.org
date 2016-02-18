@@ -2,7 +2,7 @@
 #+date: [2016-01-30 Sat]
 #+startup: showall
 
-[[https://travis-ci.org/rudolfochrist/cl-ohm.svg?branch=master][file:https://travis-ci.org/rudolfochrist/cl-ohm.svg?branch=master]]
+[[https://travis-ci.org/rudolfochrist/cl-ohm][file:https://travis-ci.org/rudolfochrist/cl-ohm.svg?branch=master]]
 
 This is an implementation of [[http://ohm.keyvalue.org/][Ohm]] in Common Lisp with some inspiration from [[http://eudoxia.me/crane/][Crane]] and [[https://github.com/fukamachi/datafly][datafly]].
 
