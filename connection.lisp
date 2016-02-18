@@ -14,6 +14,7 @@
                                  (host #(127 0 0 1))
                                  (port 6379)
                                  auth)
+  "Configure Redis backend."
   (setf (getf *connection-parameters* :host) host
         (getf *connection-parameters* :port) port
         (getf *connection-parameters* :auth) auth)
