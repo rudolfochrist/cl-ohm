@@ -1,0 +1,44 @@
+language: common-lisp
+sudo: false
+
+addons:
+  apt:
+    packages:
+      - libc6-i386
+      - openjdk-7-jre
+
+env:
+  global:
+    - PATH=~/.roswell/bin:$PATH
+    - ROSWELL_INSTALL_DIR=$HOME/.roswell
+  matrix:
+    - LISP=sbcl-bin
+    - LISP=ccl-bin
+    - LISP=abcl
+    - LISP=clisp
+    - LISP=ecl
+    - LISP=cmucl
+    - LISP=alisp
+
+install:
+  - curl -L https://raw.githubusercontent.com/snmsts/roswell/release/scripts/install-for-ci.sh | sh
+  - ros install fiveam
+
+cache:
+  directories:
+    - $HOME/.roswell
+    - $HOME/.config/common-lisp
+
+script:
+  - ros -e '(ql:quickload (list :cl-ohm :cl-ohm/test))'
+        -e '(setf 5am:*debug-on-error* t
+                  5am:*debug-on-failure* t)'
+        -e '(setf *debugger-hook*
+                  (lambda (c h)
+                    (declare (ignore c h))
+                    (uiop:quit -1)))'
+        -e '(asdf:test-system :cl-ohm)'
+
+notifications:
+  email:
+    - rudolfo.christ@gmail.com
