@@ -145,6 +145,10 @@ provide set operations.
 Sets, lists and counters are stored implicitly after their mutation. If you change normal attributes (with
 =SETF=) then this objects as to be persisted with =SAVE=.
 
+* API Documentation
+
+See [[http://rudolfochrist.github.com/cl-ohm][HTML Documentation]]. There is also an [[file:docs/cl-ohm.info][info file]] for Emacs.
+
 * Running the tests
 
 CL-OHM uses [[https://common-lisp.net/project/fiveam/docs/index.html][FiveAM]] for testing. Please installed it with
