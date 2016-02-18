@@ -18,18 +18,18 @@ env:
     - LISP=sbcl-bin
     - LISP=ccl-bin
     - LISP=abcl
-    - LISP=clisp
+    #- LISP=clisp
     - LISP=ecl
-    - LISP=cmucl
+    #- LISP=cmucl
     - LISP=alisp
 
 matrix:
   allow_failures:
-    - env: LISP=clisp
-    - env: LISP=cmucl
+    #- env: LISP=clisp
+    #- env: LISP=cmucl
 
 install:
-  - curl -L https://raw.githubusercontent.com/snmsts/roswell/release/scripts/install-for-ci.sh | sh
+  - curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh
   - ros install fiveam
 
 cache:
