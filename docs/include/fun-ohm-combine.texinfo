@@ -1,5 +1,0 @@
-@findex combine
-@anchor{Generic-Function combine}
-@deffn {Generic Function} {combine} set1 set2
-Combines SET1 and SET2. Some would say intersection.
-@end deffn

@@ -1,5 +1,0 @@
-@findex list-ids
-@anchor{Generic-Function list-ids}
-@deffn {Generic Function} {list-ids} collection @&optional start stop
-Returns the IDs stored in @code{collection}.
-@end deffn

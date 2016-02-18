@@ -1,5 +1,0 @@
-@findex create
-@anchor{Function create}
-@deffn {Function} {create} name @&rest initargs
-Creates a persisted instance of @code{name}.
-@end deffn
