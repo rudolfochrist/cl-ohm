@@ -46,7 +46,3 @@ script:
                     (declare (ignore c h))
                     (uiop:quit -1)))'
         -e '(asdf:test-system :cl-ohm)'
-
-notifications:
-  email:
-    - rudolfo.christ@gmail.com
