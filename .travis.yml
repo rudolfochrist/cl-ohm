@@ -15,7 +15,7 @@ env:
     - PATH=~/.roswell/bin:$PATH
     - ROSWELL_INSTALL_DIR=$HOME/.roswell
   matrix:
-    - LISP=sbcl-bin
+    - LISP=sbcl-bin COVERALLS=true
     - LISP=ccl-bin
     - LISP=abcl
     #- LISP=clisp
@@ -31,6 +31,7 @@ matrix:
 install:
   - curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh
   - ros install fiveam
+  - ros install cl-coveralls
 
 cache:
   directories:
@@ -45,4 +46,5 @@ script:
                   (lambda (c h)
                     (declare (ignore c h))
                     (uiop:quit -1)))'
-        -e '(asdf:test-system :cl-ohm)'
+        -e '(coveralls:with_coveralls (:exclude (list t))
+              (asdf:test-system :cl-ohm))'
