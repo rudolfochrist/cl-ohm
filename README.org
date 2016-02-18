@@ -22,7 +22,7 @@ Currently clone the repo to your quicklisps =local-projects= folder and run
 
 tbd.
 
-* Open points [7/11]
+* Open points [8/11]
 
 - [X] lists
 - [X] sets
@@ -37,9 +37,9 @@ tbd.
 - [ ] write docs (readme/texinfo/html)
 - [X] add tests
 - [X] think about getting rid of list-* and set-* prefixes. Maybe in it's own package e.g. =s:elements= and =l:pop=, etc.
-- [ ] transfer those open points to issues
+- [X] transfer those open points to issues
 
 
 * License
 
-MIT Copyright (c) 2016 Sebastian Christ
+[[file:LICENSE][MIT Copyright (c) 2016 Sebastian Christ]]
