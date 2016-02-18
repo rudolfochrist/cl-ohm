@@ -1,0 +1,5 @@
+@findex add
+@anchor{Generic-Function add}
+@deffn {Generic Function} {add} collection element
+Adds a @code{element} to the @code{collection}. @code{element} must be a persistable object.
+@end deffn

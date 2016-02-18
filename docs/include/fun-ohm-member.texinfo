@@ -1,0 +1,5 @@
+@findex member
+@anchor{Generic-Function member}
+@deffn {Generic Function} {member} collection element
+Checks if @code{element} is a member of @code{collection}.
+@end deffn

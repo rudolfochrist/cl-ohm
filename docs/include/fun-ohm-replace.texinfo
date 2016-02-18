@@ -1,0 +1,5 @@
+@findex replace
+@anchor{Generic-Function replace}
+@deffn {Generic Function} {replace} collection new-elements
+Replaces the COLLECTION's elements with @code{new-elements}.
+@end deffn

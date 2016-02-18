@@ -1,0 +1,5 @@
+@findex pop
+@anchor{Generic-Function pop}
+@deffn {Generic Function} {pop} list
+Removes and returns an the right outermost element from the @code{list}.
+@end deffn

@@ -1,0 +1,6 @@
+@findex filter-with
+@anchor{Function filter-with}
+@deffn {Function} {filter-with} class-name attribute value
+Find an object with unique value. e.g.
+(find-one 'user :email "foo@@foo.com")
+@end deffn

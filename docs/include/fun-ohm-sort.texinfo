@@ -1,0 +1,5 @@
+@findex sort
+@anchor{Generic-Function sort}
+@deffn {Generic Function} {sort} set @&key desc alpha start end by get store
+Sorts the @code{set}.
+@end deffn

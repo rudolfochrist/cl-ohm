@@ -1,0 +1,5 @@
+@findex range
+@anchor{Generic-Function range}
+@deffn {Generic Function} {range} list start stop
+Returns a sublist of @code{list} from @code{start} to @code{stop}.
+@end deffn

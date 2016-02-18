@@ -1,0 +1,5 @@
+@findex except
+@anchor{Generic-Function except}
+@deffn {Generic Function} {except} set1 set2
+Removes elements from SET1 that are also in SET2. Same people would say set-difference.
+@end deffn

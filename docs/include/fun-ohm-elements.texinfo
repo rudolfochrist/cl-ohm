@@ -1,0 +1,5 @@
+@findex elements
+@anchor{Generic-Function elements}
+@deffn {Generic Function} {elements} collection
+Returns all elements in @code{collection}.
+@end deffn

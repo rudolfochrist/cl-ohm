@@ -1,0 +1,5 @@
+@findex remove
+@anchor{Generic-Function remove}
+@deffn {Generic Function} {remove} collection element
+Removes @code{element} from the @code{collection}.
+@end deffn

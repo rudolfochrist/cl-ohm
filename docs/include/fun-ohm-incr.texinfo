@@ -1,0 +1,5 @@
+@findex incr
+@anchor{Generic-Function incr}
+@deffn {Generic Function} {incr} counter @&optional increment
+Increments @code{counter} by @code{increment}.
+@end deffn

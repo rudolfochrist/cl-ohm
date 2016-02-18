@@ -1,0 +1,5 @@
+@findex flush-db
+@anchor{Function flush-db}
+@deffn {Function} {flush-db}
+Erase the data store.
+@end deffn

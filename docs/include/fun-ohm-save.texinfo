@@ -1,0 +1,5 @@
+@findex save
+@anchor{Generic-Function save}
+@deffn {Generic Function} {save} object
+Saves an object into the data store.
+@end deffn

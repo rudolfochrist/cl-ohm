@@ -1,0 +1,5 @@
+@findex find-id
+@anchor{Generic-Function find-id}
+@deffn {Generic Function} {find-id} set id
+Checks if @code{id} is a member of @code{set}.
+@end deffn

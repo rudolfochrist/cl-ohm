@@ -1,0 +1,5 @@
+@findex setup-redis-connection
+@anchor{Function setup-redis-connection}
+@deffn {Function} {setup-redis-connection} @&key host port auth
+Configure Redis backend.
+@end deffn

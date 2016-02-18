@@ -1,0 +1,5 @@
+@findex counter
+@anchor{Generic-Function counter}
+@deffn {Generic Function} {counter} counter
+Retrieves the value of the counter @code{counter/}
+@end deffn

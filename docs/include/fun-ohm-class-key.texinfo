@@ -1,0 +1,5 @@
+@findex class-key
+@anchor{Generic-Function class-key}
+@deffn {Generic Function} {class-key} object @&rest segments
+Creates a persistence key for class of @code{object}.
+@end deffn
