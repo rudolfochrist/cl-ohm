@@ -30,8 +30,6 @@ matrix:
 
 install:
   - curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh
-  - ros install fiveam
-  - ros install cl-coveralls
 
 cache:
   directories:
@@ -39,7 +37,8 @@ cache:
     - $HOME/.config/common-lisp
 
 script:
-  - ros -e '(ql:quickload (list :cl-ohm :cl-ohm/test))'
+  - ros -l fiveam -l cl-coveralls
+        -e '(ql:quickload (list :cl-ohm :cl-ohm/test))'
         -e '(setf 5am:*debug-on-error* t
                   5am:*debug-on-failure* t)'
         -e '(setf *debugger-hook*
