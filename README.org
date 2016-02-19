@@ -9,8 +9,6 @@ This is an implementation of [[http://ohm.keyvalue.org/][Ohm]] in Common Lisp wi
 
 Ohm is an object-hash mapping for [[http://redis.io/][Redis]].
 
-*This is absolutely in alpha stage. Use at your own risk!*
-
 * Installation
 
 Please download and install [[http://redis.io/download][Redis]] (or check if it is available through the package manager of your
