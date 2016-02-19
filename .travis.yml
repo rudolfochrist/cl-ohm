@@ -47,3 +47,9 @@ script:
                     (uiop:quit -1)))'
         -e '(coveralls:with-coveralls (:exclude (list "test" "test-lispworks.lisp"))
               (asdf:test-system :cl-ohm))'
+
+notifications:
+  email:
+    recipients:
+      - rudolfo.christ@gmail.com
+    on_failure: change
