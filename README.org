@@ -2,6 +2,7 @@
 #+date: [2016-01-30 Sat]
 #+startup: showall
 
+[[https://opensource.org/licenses/MIT][file:https://img.shields.io/badge/License-MIT-yellow.svg]]
 [[https://travis-ci.org/rudolfochrist/cl-ohm][file:https://travis-ci.org/rudolfochrist/cl-ohm.svg?branch=master]]
 [[https://coveralls.io/github/rudolfochrist/cl-ohm?branch=master][file:https://coveralls.io/repos/github/rudolfochrist/cl-ohm/badge.svg?branch=master]]
 
