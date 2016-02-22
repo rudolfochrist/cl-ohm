@@ -144,7 +144,7 @@ provide set operations.
 ** Persistence Strategy
 
 Sets, lists and counters are stored implicitly after their mutation. If you change normal attributes (with
-=SETF=) then this objects as to be persisted with =SAVE=.
+=SETF=) then those objects have to be persisted with =SAVE=.
 
 * API Documentation
 
