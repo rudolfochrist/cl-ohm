@@ -165,7 +165,7 @@ Creating the union of persons named *Duck* and persons named *Gander*:
 :  #<PERSON CL-OHM::ID="3" FIRST-NAME="Gladstone" LAST-NAME="Gander"
 :    {1008745513}>)
 
-Use =EXCEPT= to exclude objects with specific properties. Say exclude persons named *Gander* from all persons:
+Use =EXCEPT= to exclude objects with specific properties. Say, exclude persons named *Gander* from all persons:
 
 #+BEGIN_SRC lisp
 (ohm:elements (ohm:except (ohm:filter 'person) ; all persons
@@ -176,7 +176,7 @@ Use =EXCEPT= to exclude objects with specific properties. Say exclude persons na
 : (#<PERSON CL-OHM::ID="1" FIRST-NAME="Donald" LAST-NAME="Duck" {1008AA3963}>
 :  #<PERSON CL-OHM::ID="2" FIRST-NAME="Daisy" LAST-NAME="Duck" {1008AA3B43}>)
 
-Use =COMBINE= to limit the resulting set. Say all persons with last name *Duck* and first name *Donald*:
+Use =COMBINE= to limit the resulting set. Say, all persons with last name *Duck* and first name *Donald*:
 
 #+BEGIN_SRC lisp
 (ohm:elements (ohm:combine (ohm:filter 'person :last-name "Duck")
