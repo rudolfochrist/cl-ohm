@@ -1,5 +1,6 @@
-#+title: CL-OHM README
+#+title: CL-OHM
 #+date: [2016-01-30 Sat]
+#+language: en
 #+startup: showall
 
 [[http://quickdocs.org/cl-ohm/][file:http://quickdocs.org/badge/cl-ohm.svg]]
@@ -11,15 +12,6 @@ This is an implementation of [[http://ohm.keyvalue.org/][Ohm]] in Common Lisp wi
 
 Ohm is an object-hash mapping for [[http://redis.io/][Redis]].
 
-* Installation
-
-Please download and install [[http://redis.io/download][Redis]] (or check if it is available through the package manager of your
-system. Which is very likely).
-
-Currently clone the repo to your quicklisps =local-projects= folder and run
-
-: (ql:quickload :cl-ohm)
-
 * Usage
 
 ** Starting and connecting Redis
@@ -28,9 +20,13 @@ First of all, Redis must be up and running. You can start Redis with the command
 
 : $ redis-server
 
-This starts Redis on =localhost:6379=. If you're using a different host or port you have to configure
-CL-OHM. For example, if Redis is running on =198.162.55.12= on port =12455= than you must setup CL-OHM like
-this:
+Then load =CL-OHM=:
+
+: (ql:quickload :cl-ohm)
+
+Without configuration Redis runs on =localhost:6379=. If you're using a different host or port you have to
+configure =CL-OHM=. For example, if Redis is running on =198.162.55.12= on port =12455= than you must setup
+CL-OHM like this:
 
 #+BEGIN_SRC lisp
 (ohm:setup-redis-connection :host #(198 162 55 12) :port 12455)
@@ -138,8 +134,60 @@ Each model can define sets or lists as attributes. Sets and lists can hold other
   :sets ((tags :element-type tag)))
 #+END_SRC
 
-The difference between sets and lists is that sets don't necessarily have an order and
-provide set operations.
+=CL-OHM= persisted objects are internally stored in sets.
+#+BEGIN_SRC lisp
+(ohm:create 'person :first-name "Donald" :last-name "Duck")
+(ohm:filter 'person)
+#+END_SRC
+
+#+RESULTS:
+: #<CL-OHM::OHM-SET {1009FAB643}>
+
+This lets you combine the =FITLER= function with set operations.
+
+*** Set operations
+
+Creating some test data:
+
+#+BEGIN_SRC lisp :results silent
+(ohm:create 'person :first-name "Donald" :last-name "Duck")
+(ohm:create 'person :first-name "Daisy" :last-name "Duck")
+(ohm:create 'person :first-name "Gladstone" :last-name "Gander")
+#+END_SRC
+
+Creating the union of persons named *Duck* and persons named *Gander*:
+
+#+BEGIN_SRC lisp
+(ohm:elements (ohm:union (ohm:filter 'person :last-name "Duck")
+                         (ohm:filter 'person :last-name "Gander")))
+#+END_SRC
+
+#+RESULTS:
+: (#<PERSON CL-OHM::ID="1" FIRST-NAME="Donald" LAST-NAME="Duck" {1008745153}>
+:  #<PERSON CL-OHM::ID="2" FIRST-NAME="Daisy" LAST-NAME="Duck" {1008745333}>
+:  #<PERSON CL-OHM::ID="3" FIRST-NAME="Gladstone" LAST-NAME="Gander"
+:    {1008745513}>)
+
+Use =EXCEPT= to exclude persons named *Gander* from all persons:
+
+#+BEGIN_SRC lisp
+(ohm:elements (ohm:except (ohm:filter 'person) ; all persons
+                          (ohm:filter 'person :last-name "Gander")))
+#+END_SRC
+
+#+RESULTS:
+: (#<PERSON CL-OHM::ID="1" FIRST-NAME="Donald" LAST-NAME="Duck" {1008AA3963}>
+:  #<PERSON CL-OHM::ID="2" FIRST-NAME="Daisy" LAST-NAME="Duck" {1008AA3B43}>)
+
+Use =COMBINE= limit the resulting set. Say all persons with last name *Duck* and first name *Donald*:
+
+#+BEGIN_SRC lisp
+(ohm:elements (ohm:combine (ohm:filter 'person :last-name "Duck")
+                           (ohm:filter 'person :first-name "Donald")))
+#+END_SRC
+
+#+RESULTS:
+: (#<PERSON CL-OHM::ID="1" FIRST-NAME="Donald" LAST-NAME="Duck" {1008C6B8F3}>)
 
 ** Persistence Strategy
 
