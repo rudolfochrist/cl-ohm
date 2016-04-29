@@ -13,6 +13,7 @@
                 #:once-only)
   ;; high-level
   (:export
+   #:ohm-id
    #:class-key
    #:object-key
    #:create
