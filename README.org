@@ -193,7 +193,7 @@ Sets, lists and counters are stored implicitly after their mutation. If you chan
 
 * API Documentation
 
-See [[http://rudolfochrist.github.com/cl-ohm][HTML Documentation]]. There is also an [[file:docs/cl-ohm.info][info file]] for Emacs.
+See [[https://htmlpreview.github.io/?https://github.com/rudolfochrist/cl-ohm/blob/master/docs/cl-ohm-0.1.0.html#CL-OHM][CL-OHM HTML Documentation]].
 
 * Running the tests
 
