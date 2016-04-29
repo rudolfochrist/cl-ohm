@@ -1,7 +1,0 @@
-@findex filter
-@anchor{Function filter}
-@deffn {Function} {filter} class-name @&rest kwargs
-Find objects in the data store.
-If no keyword arguments are given, all objects of
-@code{class-name} fetched.
-@end deffn

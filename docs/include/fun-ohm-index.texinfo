@@ -1,5 +1,0 @@
-@findex index
-@anchor{Generic-Function index}
-@deffn {Generic Function} {index} list index
-Returns the element with @code{index} from @code{list}.
-@end deffn

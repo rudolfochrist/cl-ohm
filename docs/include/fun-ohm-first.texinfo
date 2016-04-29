@@ -1,5 +1,0 @@
-@findex first
-@anchor{Generic-Function first}
-@deffn {Generic Function} {first} list
-Returns the first element of the @code{list}.
-@end deffn

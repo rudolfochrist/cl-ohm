@@ -1,5 +1,0 @@
-@findex last
-@anchor{Generic-Function last}
-@deffn {Generic Function} {last} list
-Returns the last element of the @code{list}.
-@end deffn

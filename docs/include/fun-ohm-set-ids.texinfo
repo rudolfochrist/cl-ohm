@@ -1,5 +1,0 @@
-@findex set-ids
-@anchor{Generic-Function set-ids}
-@deffn {Generic Function} {set-ids} set
-Returns the IDs contained in @code{set}.
-@end deffn

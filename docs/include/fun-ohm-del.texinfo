@@ -1,5 +1,0 @@
-@findex del
-@anchor{Generic-Function del}
-@deffn {Generic Function} {del} object
-Removes @code{object} from the data store.
-@end deffn

@@ -1,5 +1,0 @@
-@findex decr
-@anchor{Generic-Function decr}
-@deffn {Generic Function} {decr} counter @&optional decrement
-Decrements @code{counter} by @code{decrement}.
-@end deffn
