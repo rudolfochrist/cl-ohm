@@ -1,5 +1,0 @@
-@findex filter-id
-@anchor{Generic-Function filter-id}
-@deffn {Generic Function} {filter-id} class-name id
-Retrieves an object by id from the data store.
-@end deffn

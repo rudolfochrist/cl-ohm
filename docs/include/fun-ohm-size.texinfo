@@ -1,5 +1,0 @@
-@findex size
-@anchor{Generic-Function size}
-@deffn {Generic Function} {size} collection
-Returns the number of elements in the @code{collection}.
-@end deffn

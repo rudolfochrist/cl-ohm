@@ -1,5 +1,0 @@
-@findex sort-by
-@anchor{Generic-Function sort-by}
-@deffn {Generic Function} {sort-by} set key @&key desc alpha start end get store
-Sorts the objects in @code{set} by it's property @code{key}.
-@end deffn

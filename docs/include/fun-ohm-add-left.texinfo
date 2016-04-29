@@ -1,5 +1,0 @@
-@findex add-left
-@anchor{Generic-Function add-left}
-@deffn {Generic Function} {add-left} list element
-Add @code{element} to the left side of @code{list}.
-@end deffn

@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8"/>
+    <title>CL-OHM</title>
+    <style type="text/css">
+      html{font-family: serif;}
+      code a{text-decoration: none;}
+      h1{display: inline-block; margin-bottom: 0;}
+      code{font-family: monospace;}
+      h4{display: inline-block; margin: 0; padding: 0;}
+      #symbol-index ul{list-style: none;}
+      .package li{margin-bottom: 20px;}
+      .package pre{margin: 0 0 0 10px; white-space: pre-wrap;}
+      .package .nicknames{font-weight: normal;}
+      table{margin: 20px;}
+      td{padding-bottom: 10px;}
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>cl-ohm</h1>
+      <span class="version">0.1.0</span>
+      <p class="description">An object-hash mapping for Redis in Common Lisp</p>
+    </header>
+    <div id="content">
+      <article>
+        
+          <span><p><a href="http://quickdocs.org/cl-ohm/"><img src="file:http://quickdocs.org/badge/cl-ohm.svg" alt=""/></a>
+<a href="https://opensource.org/licenses/MIT"><img src="file:https://img.shields.io/badge/License-MIT-yellow.svg" alt=""/></a>
+<a href="https://travis-ci.org/rudolfochrist/cl-ohm">&lt;file:https://travis-ci.org/rudolfochrist/cl-ohm.svg?branch=master&gt;</a>
+<a href="https://coveralls.io/github/rudolfochrist/cl-ohm?branch=master">&lt;file:https://coveralls.io/repos/github/rudolfochrist/cl-ohm/badge.svg?branch=master&gt;</a></p>
+
+<p>This is an implementation of <a href="http://ohm.keyvalue.org/">Ohm</a> in Common
+Lisp with some inspiration from <a href="http://eudoxia.me/crane/">Crane</a> and
+<a href="https://github.com/fukamachi/datafly">datafly</a>.</p>
+
+<p>Ohm is an object-hash mapping for <a href="http://redis.io/">Redis</a>.</p>
+
+<h1>Usage</h1>
+
+<h2>Starting and connecting Redis</h2>
+
+<p>First of all, Redis must be up and running. You can start Redis with the
+command line</p>
+
+<pre><code>$ redis-server</code></pre>
+
+<p>Then load <code>CL-OHM</code>:</p>
+
+<pre><code>(ql:quickload :cl-ohm)</code></pre>
+
+<p>Without configuration Redis runs on <code>localhost:6379</code>. If you're using a
+different host or port you have to configure <code>CL-OHM</code>. For example, if
+Redis is running on <code>198.162.55.12</code> on port <code>12455</code> than you must setup
+CL-OHM like this:</p>
+
+<pre><code>(<a href="#CL-OHM:SETUP-REDIS-CONNECTION">ohm:setup-redis-connection</a> :host #(198 162 55 12) :port 12455)</code></pre>
+
+<h2>Mapping objects to Redis</h2>
+
+<p>Use <code><a href="#CL-OHM:DEFINE-OHM-MODEL">ohm:define-ohm-model</a></code> to specify your models.</p>
+
+<pre><code>(<a href="#CL-OHM:DEFINE-OHM-MODEL">ohm:define-ohm-model</a> person ()
+  :attributes ((first-name :indexp t)
+               (last-name :indexp t)
+               (email :uniquep t)))</code></pre>
+
+<p>You can create new persisted objects with <code><a href="#CL-OHM:CREATE">CREATE</a></code>:</p>
+
+<pre><code>(<a href="#CL-OHM:CREATE">ohm:create</a> 'person :first-name &quot;John&quot; :last-name &quot;McCarthy&quot;)</code></pre>
+
+<p>Attributes are setfable like ordinary objects slots (Note: if you don't
+provide readers or writers for an attribute, an accessor will be
+created) but has to be <strong>explicitly saved to be persisted</strong>.</p>
+
+<pre><code>(<a href="#CL-OHM:CREATE">ohm:create</a> 'person :first-name &quot;Bill&quot;)
+(<a href="http://l1sp.org/cl/setf">setf</a> (first-name *) &quot;William&quot;)
+(<a href="#CL-OHM:SAVE">ohm:save</a> **)</code></pre>
+
+<h2>Loading objects from the data store</h2>
+
+<p>When you know an object's ID then you can load it with <code><a href="#CL-OHM:FILTER-ID">filter-id</a></code></p>
+
+<pre><code>(<a href="#CL-OHM:FILTER-ID">ohm:filter-id</a> 'person &quot;5&quot;)
+;;; or
+(<a href="#CL-OHM:FILTER-ID">ohm:filter-id</a> 'person 5)</code></pre>
+
+<h3>Indexes</h3>
+
+<p>For each attribute marked with <code>:INDEXP</code> and index gets created. With
+this index it is possible to load objects by their values.</p>
+
+<pre><code>(<a href="#CL-OHM:FILTER">ohm:filter</a> 'person :first-name &quot;Bill&quot;)</code></pre>
+
+<p>This load all objects with <code>first-name=Bill</code>. Indexed attributes can be
+combined in <code><a href="#CL-OHM:FILTER">FILTER</a></code>.</p>
+
+<pre><code>(<a href="#CL-OHM:FILTER">ohm:filter</a> 'person :first-name &quot;Bill&quot; :last-name &quot;Miller&quot;)</code></pre>
+
+<p>If you omit any attribute specifiers from <code><a href="#CL-OHM:FILTER">FILTER</a></code> than all objects for
+the given type are retrieved.</p>
+
+<pre><code>(<a href="#CL-OHM:FILTER">ohm:filter</a> 'person)</code></pre>
+
+<h2>Unique values</h2>
+
+<p>Each attribute marked as <code>:UNIQUEP</code> must be unique for all instances of
+a given model. Considering the <code>person</code> model from above this means two
+instances cannot have the same <code>email</code>. <code>:UNIQUEP</code> also creates an
+index, query-able with <code><a href="#CL-OHM:FILTER-WITH">FILTER-WITH</a></code>.</p>
+
+<pre><code>(<a href="#CL-OHM:FILTER-WITH">ohm:filter-with</a> 'person :email &quot;e@example.org&quot;)</code></pre>
+
+<p>This load the <code>person</code> object with <code>email=e@example.org</code></p>
+
+<h2>Counters</h2>
+
+<p>Counters let you count atomically.</p>
+
+<pre><code>(<a href="#CL-OHM:DEFINE-OHM-MODEL">ohm:define-ohm-model</a> candidate (person)
+  :counters (votes))
+
+(<a href="http://l1sp.org/cl/let">let</a> ((candidate (<a href="#CL-OHM:CREATE">create</a> 'candidate :first-name &quot;Bill&quot;)))
+  (<a href="#CL-OHM:INCR">ohm:incr</a> (votes candidate))
+  (<a href="#CL-OHM:INCR">ohm:incr</a> (votes candidate))
+
+  (<a href="#CL-OHM:COUNTER">ohm:counter</a> (votes candidate))       ;=&gt; 2
+
+  (<a href="#CL-OHM:DECR">ohm:decr</a> (votes candidate) 2)
+
+  (<a href="#CL-OHM:COUNTER">ohm:counter</a> (votes candidate)))      ;=&gt; 0</code></pre>
+
+<h2>Sets and Lists</h2>
+
+<p>Each model can define sets or lists as attributes. Sets and lists can
+hold other persisted objects defined by <code><a href="#CL-OHM:DEFINE-OHM-MODEL">DEFINE-OHM-MODEL</a></code>. Therefore
+you most provide the set's or list's element-type.</p>
+
+<pre><code>(<a href="#CL-OHM:DEFINE-OHM-MODEL">ohm:define-ohm-model</a> tag ()
+  :attributes ((name :indexp t)))
+
+(<a href="#CL-OHM:DEFINE-OHM-MODEL">ohm:define-ohm-model</a> post ()
+  :lists ((authors :element-type person))
+  :sets ((tags :element-type tag)))</code></pre>
+
+<p><code>CL-OHM</code> persisted objects are internally stored in sets.</p>
+
+<pre><code>(<a href="#CL-OHM:CREATE">ohm:create</a> 'person :first-name &quot;Donald&quot; :last-name &quot;Duck&quot;)
+(<a href="#CL-OHM:FILTER">ohm:filter</a> 'person) ;=&gt; #&lt;CL-OHM::OHM-SET {1009FAB643}&gt;</code></pre>
+
+<p>This lets you combine the <code>FITLER</code> function with set operations.</p>
+
+<h3>Set operations</h3>
+
+<p>Creating some test data:</p>
+
+<pre><code>(<a href="#CL-OHM:CREATE">ohm:create</a> 'person :first-name &quot;Donald&quot; :last-name &quot;Duck&quot;)
+(<a href="#CL-OHM:CREATE">ohm:create</a> 'person :first-name &quot;Daisy&quot; :last-name &quot;Duck&quot;)
+(<a href="#CL-OHM:CREATE">ohm:create</a> 'person :first-name &quot;Gladstone&quot; :last-name &quot;Gander&quot;)</code></pre>
+
+<p>Creating the union of persons named <strong>Duck</strong> and persons named
+<strong>Gander</strong>:</p>
+
+<pre><code>(<a href="#CL-OHM:ELEMENTS">ohm:elements</a> (<a href="#CL-OHM:UNION">ohm:union</a> (<a href="#CL-OHM:FILTER">ohm:filter</a> 'person :last-name &quot;Duck&quot;)
+                         (<a href="#CL-OHM:FILTER">ohm:filter</a> 'person :last-name &quot;Gander&quot;)))</code></pre>
+
+<p>Use <code><a href="#CL-OHM:EXCEPT">EXCEPT</a></code> to exclude objects with specific properties. Say, exclude
+persons named <strong>Gander</strong> from all persons:</p>
+
+<pre><code>(<a href="#CL-OHM:ELEMENTS">ohm:elements</a> (<a href="#CL-OHM:EXCEPT">ohm:except</a> (<a href="#CL-OHM:FILTER">ohm:filter</a> 'person) ; all persons
+                          (<a href="#CL-OHM:FILTER">ohm:filter</a> 'person :last-name &quot;Gander&quot;)))</code></pre>
+
+<p>Use <code><a href="#CL-OHM:COMBINE">COMBINE</a></code> to limit the resulting set. Say, all persons with last
+name <strong>Duck</strong> and first name <strong>Donald</strong>:</p>
+
+<pre><code>(<a href="#CL-OHM:ELEMENTS">ohm:elements</a> (<a href="#CL-OHM:COMBINE">ohm:combine</a> (<a href="#CL-OHM:FILTER">ohm:filter</a> 'person :last-name &quot;Duck&quot;)
+                           (<a href="#CL-OHM:FILTER">ohm:filter</a> 'person :first-name &quot;Donald&quot;)))</code></pre>
+
+<h2>Persistence Strategy</h2>
+
+<p>Sets, lists and counters are stored implicitly after their mutation. If
+you change normal attributes (with <code><a href="http://l1sp.org/cl/setf">SETF</a></code>) then those objects have to be
+persisted with <code><a href="#CL-OHM:SAVE">SAVE</a></code>.</p>
+
+<h1>API Documentation</h1>
+
+<p>See <a href="http://rudolfochrist.github.com/cl-ohm">HTML Documentation</a>. There
+is also an <a href="docs/cl-ohm.info">info file</a> for Emacs.</p>
+
+<h1>Running the tests</h1>
+
+<p>CL-OHM uses
+<a href="https://common-lisp.net/project/fiveam/docs/index.html">FiveAM</a> for
+testing. Please installed it with</p>
+
+<pre><code>(ql:quickload :fiveam)</code></pre>
+
+<p>Then you can run the test through ASDF:</p>
+
+<pre><code>(asdf:test-system :cl-ohm)</code></pre>
+
+<h1>License</h1>
+
+<p><a href="LICENSE">MIT Copyright (c) 2016 Sebastian Christ</a></p>
+</span>
+        
+      </article>
+      <article>
+        
+          <h2>Copyright</h2>
+          <span>cl-ohm</span> is licensed under the <span><a href="https://tldrlegal.com/search?q=MIT">MIT</a></span> license.
+          
+            © <span>Sebastian Christ &lt;rudolfo.christ@gmail.com&gt;</span>
+            .
+          
+          This library can be obtained on <a href="https://github.com/rudolfochrist/cl-ohm">https://github.com/rudolfochrist/cl-ohm</a>.
+        
+      </article>
+      
+        <article id="symbol-index">
+          <h2>Package Index</h2>
+          <ul><li class="package">
+              <h3>
+                <a name="CL-OHM" href="#CL-OHM">CL-OHM</a>
+                <span class="nicknames">(OHM)</span>
+              </h3>
+              <ul><li>
+                  <a name="CL-OHM:OHM-MISSING-ID-ERROR"/>
+                  <article>
+                    <header class="condition">
+                      <span class="type">condition</span>
+                      <code>
+                        <h4><a href="#CL-OHM:OHM-MISSING-ID-ERROR" class="name">OHM-MISSING-ID-ERROR</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">()</span>
+                      </code>
+                    </header>
+                    <pre class="docstring"/>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:OHM-NO-INDEX-FOUND-ERROR"/>
+                  <article>
+                    <header class="condition">
+                      <span class="type">condition</span>
+                      <code>
+                        <h4><a href="#CL-OHM:OHM-NO-INDEX-FOUND-ERROR" class="name">OHM-NO-INDEX-FOUND-ERROR</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">()</span>
+                      </code>
+                    </header>
+                    <pre class="docstring"/>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:OHM-UNIQUE-CONSTRAINT-VIOLATION"/>
+                  <article>
+                    <header class="condition">
+                      <span class="type">condition</span>
+                      <code>
+                        <h4><a href="#CL-OHM:OHM-UNIQUE-CONSTRAINT-VIOLATION" class="name">OHM-UNIQUE-CONSTRAINT-VIOLATION</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">()</span>
+                      </code>
+                    </header>
+                    <pre class="docstring"/>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:CREATE"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#CL-OHM:CREATE" class="name">CREATE</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(NAME &amp;REST INITARGS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Creates a persisted instance of NAME.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:FILTER"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#CL-OHM:FILTER" class="name">FILTER</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(CLASS-NAME &amp;REST KWARGS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Find objects in the data store.
+If no keyword arguments are given, all objects of
+CLASS-NAME fetched.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:FILTER-WITH"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#CL-OHM:FILTER-WITH" class="name">FILTER-WITH</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(CLASS-NAME ATTRIBUTE VALUE)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Find an object with unique value. e.g.
+(find-one 'user :email &quot;foo@foo.com&quot;)</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:FLUSH-DB"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#CL-OHM:FLUSH-DB" class="name">FLUSH-DB</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">()</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Erase the data store.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:SETUP-REDIS-CONNECTION"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#CL-OHM:SETUP-REDIS-CONNECTION" class="name">SETUP-REDIS-CONNECTION</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(&amp;KEY (HOST #(127 0 0 1)) (PORT 6379) AUTH)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Configure Redis backend.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:ADD"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:ADD" class="name">ADD</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(COLLECTION ELEMENT)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Adds a ELEMENT to the COLLECTION. ELEMENT must be a persistable object.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:ADD-LEFT"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:ADD-LEFT" class="name">ADD-LEFT</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(LIST ELEMENT)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Add ELEMENT to the left side of LIST.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:CLASS-KEY"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:CLASS-KEY" class="name">CLASS-KEY</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(OBJECT &amp;REST SEGMENTS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Creates a persistence key for class of OBJECT.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:COMBINE"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:COMBINE" class="name">COMBINE</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(SET1 SET2)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Combines SET1 and SET2. Some would say intersection.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:COUNTER"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:COUNTER" class="name">COUNTER</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(COUNTER)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Retrieves the value of the counter COUNTER/</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:DECR"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:DECR" class="name">DECR</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(COUNTER &amp;OPTIONAL DECREMENT)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Decrements COUNTER by DECREMENT.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:DEL"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:DEL" class="name">DEL</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(OBJECT)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Removes OBJECT from the data store.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:ELEMENTS"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:ELEMENTS" class="name">ELEMENTS</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(COLLECTION)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns all elements in COLLECTION.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:EXCEPT"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:EXCEPT" class="name">EXCEPT</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(SET1 SET2)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Removes elements from SET1 that are also in SET2. Same people would say set-difference.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:FILTER-ID"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:FILTER-ID" class="name">FILTER-ID</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(CLASS-NAME ID)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Retrieves an object by id from the data store.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:FIND-ID"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:FIND-ID" class="name">FIND-ID</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(SET ID)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Checks if ID is a member of SET.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:FIRST"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:FIRST" class="name">FIRST</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(LIST)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns the first element of the LIST.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:INCR"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:INCR" class="name">INCR</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(COUNTER &amp;OPTIONAL INCREMENT)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Increments COUNTER by INCREMENT.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:INDEX"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:INDEX" class="name">INDEX</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(LIST INDEX)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns the element with INDEX from LIST.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:LAST"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:LAST" class="name">LAST</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(LIST)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns the last element of the LIST.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:LIST-IDS"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:LIST-IDS" class="name">LIST-IDS</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(COLLECTION &amp;OPTIONAL START STOP)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns the IDs stored in COLLECTION.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:MEMBER"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:MEMBER" class="name">MEMBER</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(COLLECTION ELEMENT)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Checks if ELEMENT is a member of COLLECTION.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:OBJECT-KEY"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:OBJECT-KEY" class="name">OBJECT-KEY</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(OBJECT &amp;REST SEGMENTS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Creates a persistence key for OBJECT.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:OHM-ID"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:OHM-ID" class="name">OHM-ID</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(OBJECT)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring"/>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:POP"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:POP" class="name">POP</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(LIST)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Removes and returns an the right outermost element from the LIST.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:POP-LEFT"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:POP-LEFT" class="name">POP-LEFT</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(LIST)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Removes and returns the left outermost element of the LIST.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:RANGE"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:RANGE" class="name">RANGE</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(LIST START STOP)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns a sublist of LIST from START to STOP.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:REMOVE"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:REMOVE" class="name">REMOVE</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(COLLECTION ELEMENT)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Removes ELEMENT from the COLLECTION.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:REPLACE"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:REPLACE" class="name">REPLACE</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(COLLECTION NEW-ELEMENTS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Replaces the COLLECTION's elements with NEW-ELEMENTS.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:SAVE"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:SAVE" class="name">SAVE</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(OBJECT)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Saves an object into the data store.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:SET-IDS"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:SET-IDS" class="name">SET-IDS</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(SET)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns the IDs contained in SET.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:SIZE"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:SIZE" class="name">SIZE</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(COLLECTION)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Returns the number of elements in the COLLECTION.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:SORT"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:SORT" class="name">SORT</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(SET &amp;KEY DESC ALPHA START END BY GET STORE)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Sorts the SET.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:SORT-BY"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:SORT-BY" class="name">SORT-BY</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(SET KEY &amp;KEY DESC ALPHA START END GET STORE)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Sorts the objects in SET by it's property KEY.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:UNION"/>
+                  <article>
+                    <header class="generic">
+                      <span class="type">generic</span>
+                      <code>
+                        <h4><a href="#CL-OHM:UNION" class="name">UNION</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(SET1 SET2)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring">Union two sets. ARGS are used for FILTER.</pre>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:DEFINE-OHM-MODEL"/>
+                  <article>
+                    <header class="macro">
+                      <span class="type">macro</span>
+                      <code>
+                        <h4><a href="#CL-OHM:DEFINE-OHM-MODEL" class="name">DEFINE-OHM-MODEL</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(NAME SUPERCLASSES &amp;KEY ATTRIBUTES COUNTERS LISTS SETS)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring"/>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:WITH-CONNECTION"/>
+                  <article>
+                    <header class="macro">
+                      <span class="type">macro</span>
+                      <code>
+                        <h4><a href="#CL-OHM:WITH-CONNECTION" class="name">WITH-CONNECTION</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(NIL &amp;BODY BODY)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring"/>
+                  </article>
+                </li><li>
+                  <a name="CL-OHM:WITH-TRANSACTION"/>
+                  <article>
+                    <header class="macro">
+                      <span class="type">macro</span>
+                      <code>
+                        <h4><a href="#CL-OHM:WITH-TRANSACTION" class="name">WITH-TRANSACTION</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">(&amp;BODY BODY)</span>
+                      </code>
+                    </header>
+                    <pre class="docstring"/>
+                  </article>
+                </li></ul>
+            </li></ul>
+        </article>
+      
+    </div>
+  </body>
+</html>

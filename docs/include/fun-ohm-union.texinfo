@@ -1,5 +1,0 @@
-@findex union
-@anchor{Generic-Function union}
-@deffn {Generic Function} {union} set1 set2
-Union two sets. @code{args} are used for @code{filter}.
-@end deffn
