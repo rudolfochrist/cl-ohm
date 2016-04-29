@@ -29,7 +29,7 @@ matrix:
     - env: LISP=clisp
     - env: LISP=ecl
     - env: LISP=cmucl
-    = env: LISP=alisp
+    - env: LISP=alisp
 
 install:
   - curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh
