@@ -3,7 +3,7 @@
 (in-package :asdf-user)
 
 (defsystem #:cl-ohm
-  :version "0.2.0"
+  :version "0.2.1"
   :description "An object-hash mapping for Redis in Common Lisp"
   :author "Sebastian Christ <rudolfo.christ@gmail.com>"
   :mailto "rudolfo.christ@gmail.com"
