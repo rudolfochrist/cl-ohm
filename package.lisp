@@ -1,6 +1,7 @@
 ;;;; package.lisp
 
 (defpackage #:cl-ohm
+  (:documentation "Object-hash mapping for Redis.")
   (:nicknames #:ohm)
   (:use #:cl)
   (:shadow #:remove #:pop #:first #:last #:member
